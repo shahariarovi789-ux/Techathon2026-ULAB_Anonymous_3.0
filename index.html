@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lumina | Enterprise IoT Workspace Orchestrator</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            display: ['"Outfit"', 'sans-serif'],
+          },
+          colors: {
+            darkbg: '#0b0f19',
+            cardbg: 'rgba(17, 24, 39, 0.7)',
+            accentYellow: '#eab308',
+            accentBlue: '#3b82f6',
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-darkbg text-slate-100 min-h-screen flex flex-col selection:bg-blue-500 selection:text-white">
+
+  <!-- Header -->
+  <header class="glass sticky top-0 z-40 px-6 py-4 flex flex-wrap justify-between items-center gap-4">
+    <div class="flex items-center gap-3">
+      <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
+        <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-blue-400 via-indigo-200 to-white bg-clip-text text-transparent">LUMINA</h1>
+        <p class="text-xs text-slate-400 font-semibold tracking-wider uppercase">Enterprise IoT Orchestrator</p>
+      </div>
+    </div>
+
+    <!-- Team & Gateway Connection Status -->
+    <div class="flex items-center gap-4">
+      <div class="text-right hidden sm:block">
+        <p class="text-xs text-slate-400">Team: <span class="text-indigo-400 font-semibold">ULAB_Anonymous_3.0</span></p>
+        <p class="text-[10px] text-slate-500">Lead: Only Ovi</p>
+      </div>
+      <div class="h-8 w-px bg-slate-800 hidden sm:block"></div>
+      <div id="conn-status" class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border border-red-500/20 bg-red-500/10 text-red-400">
+        <span class="h-2 w-2 rounded-full bg-red-500 animate-pulse"></span>
+        DISCONNECTED
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-grow p-6 max-w-[1600px] w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
+    
+    <!-- Left Column: Metrics & Alerts & Panels (5 cols) -->
+    <section class="lg:col-span-5 flex flex-col gap-6">
+      
+      <!-- Power Metrics Card -->
+      <div class="glass rounded-2xl p-6 relative overflow-hidden">
+        <div class="absolute -right-16 -top-16 h-36 w-36 rounded-full bg-blue-500/10 blur-3xl"></div>
+        <h2 class="text-sm font-bold tracking-wider text-slate-400 uppercase mb-4">Live Power Consumption Meter</h2>
+        
+        <div class="grid grid-cols-2 gap-6 mb-6">
+          <div class="bg-slate-900/60 rounded-xl p-4 border border-white/5">
+            <p class="text-xs text-slate-400 font-medium">Office Load</p>
+            <div class="flex items-baseline gap-1 mt-1">
+              <span id="metric-watts" class="text-3xl font-bold tracking-tight text-blue-400">0</span>
+              <span class="text-sm font-semibold text-slate-500">W</span>
+            </div>
+          </div>
+          <div class="bg-slate-900/60 rounded-xl p-4 border border-white/5">
+            <p class="text-xs text-slate-400 font-medium">Estimated Daily Usage</p>
+            <div class="flex items-baseline gap-1 mt-1">
+              <span id="metric-kwh" class="text-3xl font-bold tracking-tight text-emerald-400">0.0</span>
+              <span class="text-sm font-semibold text-slate-500">kWh</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Room Breakdown bars -->
+        <div class="space-y-3">
+          <h3 class="text-xs font-bold text-slate-400 tracking-wider uppercase mb-2">Zone Allocation</h3>
+          
+          <!-- Drawing Room -->
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="text-slate-400 font-medium">Drawing Room</span>
+              <span id="breakdown-drawing" class="font-semibold">0W</span>
+            </div>
+            <div class="w-full bg-slate-900 rounded-full h-1.5 border border-white/5">
+              <div id="bar-drawing" class="bg-indigo-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+          
+          <!-- Work Room 1 -->
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="text-slate-400 font-medium">Work Room 1</span>
+              <span id="breakdown-work1" class="font-semibold">0W</span>
+            </div>
+            <div class="w-full bg-slate-900 rounded-full h-1.5 border border-white/5">
+              <div id="bar-work1" class="bg-blue-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <!-- Work Room 2 -->
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="text-slate-400 font-medium">Work Room 2</span>
+              <span id="breakdown-work2" class="font-semibold">0W</span>
+            </div>
+            <div class="w-full bg-slate-900 rounded-full h-1.5 border border-white/5">
+              <div id="bar-work2" class="bg-cyan-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alerts Panel -->
+      <div class="glass rounded-2xl p-6 flex flex-col flex-grow min-h-[250px]">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-sm font-bold tracking-wider text-slate-400 uppercase">Active Alerts Panel</h2>
+          <span id="alert-count" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-800 border border-white/10 text-slate-400">0</span>
+        </div>
+        
+        <!-- Alerts List -->
+        <div id="alerts-container" class="flex-grow overflow-y-auto space-y-3 pr-2 max-h-[300px]">
+          <!-- Alert Nodes injected here -->
+          <div class="text-center py-8 text-slate-500 text-sm">
+            <svg class="h-8 w-8 mx-auto mb-2 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.952 11.952 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            System secure. No anomalies detected.
+          </div>
+        </div>
+      </div>
+
+      <!-- Control Center Panel -->
+      <div class="glass rounded-2xl p-6">
+        <h2 class="text-sm font-bold tracking-wider text-slate-400 uppercase mb-4">Observation Controls</h2>
+        
+        <!-- Slider override time -->
+        <div class="mb-5 bg-slate-900/40 p-4 rounded-xl border border-white/5">
+          <div class="flex justify-between items-center mb-2">
+            <label class="text-xs text-slate-400 font-semibold uppercase">Simulate Local Time</label>
+            <span id="time-override-label" class="text-xs bg-slate-800 px-2 py-0.5 rounded text-blue-400 font-bold border border-white/5">Real Time</span>
+          </div>
+          <input id="time-slider" type="range" min="0" max="23" value="12" class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500 mb-2">
+          <div class="flex justify-between text-[10px] text-slate-500">
+            <span>00:00 (Midnight)</span>
+            <span>12:00 (Noon)</span>
+            <span>23:00 (11 PM)</span>
+          </div>
+          <div class="flex gap-2 mt-3">
+            <button id="btn-override-time" class="flex-grow bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs py-1.5 px-3 rounded-lg transition">Apply Virtual Clock</button>
+            <button id="btn-reset-time" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs py-1.5 px-3 rounded-lg border border-white/5 transition">Reset</button>
+          </div>
+        </div>
+
+        <!-- Simulation Buttons & Calibration Toggle -->
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <button id="btn-trigger-anomaly" class="glass glass-hover text-red-400 hover:text-red-300 font-semibold text-xs py-2.5 px-4 rounded-xl border border-red-500/20 text-center transition">
+            ⚠️ Force 2h Anomaly
+          </button>
+          <div class="glass rounded-xl p-2.5 border border-white/5 flex items-center justify-between">
+            <span class="text-xs text-slate-400 font-semibold uppercase select-none">Calibrate Mode</span>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input id="cal-toggle" type="checkbox" value="" class="sr-only peer">
+              <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-400 after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600 peer-checked:after:bg-white"></div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Calibration Display Toast -->
+        <div id="calibration-log" class="hidden bg-slate-900 border border-indigo-500/30 text-indigo-300 rounded-xl p-3 text-xs flex justify-between items-center transition-all duration-300">
+          <div>
+            <span class="font-bold">Last Click CSS:</span>
+            <span id="cal-coords" class="ml-2 font-mono">top: 0%, left: 0%</span>
+          </div>
+          <button id="btn-copy-coords" class="text-slate-400 hover:text-slate-200 bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg border border-white/5 transition">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Right Column: Observer Interactive Floorplan (7 cols) -->
+    <section class="lg:col-span-7 flex flex-col gap-6">
+      
+      <!-- Interactive Floorplan -->
+      <div class="glass rounded-3xl p-6 flex flex-col justify-between">
+        <div>
+          <h2 class="text-lg font-bold tracking-tight text-white mb-1">Office Workspace Observer (Digital Twin)</h2>
+          <p class="text-xs text-slate-400 mb-4">Click device badges directly on the plan to toggle states manually or verify the calibration coordinates.</p>
+        </div>
+
+        <!-- Floorplan relative container -->
+        <div class="relative w-full overflow-hidden rounded-2xl bg-slate-950 border border-white/5 floorplan-img-container flex justify-center items-center">
+          <img id="floorplan-image" src="office_layout.png" alt="Office Layout" class="w-full h-auto opacity-80 pointer-events-auto">
+          
+          <!-- Node overlays injected via JS -->
+          <div id="floorplan-overlays" class="absolute inset-0 pointer-events-none">
+            <!-- Badges positioned absolutely using coords from JSON will go here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Device Grid View (Room Breakdown status cards) -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Drawing Room -->
+        <div class="glass rounded-2xl p-5 border-t-4 border-t-indigo-600">
+          <h3 class="text-sm font-bold text-white mb-3">Drawing Room</h3>
+          <div id="room-list-drawing" class="space-y-2 text-xs">
+            <p class="text-slate-500">Loading devices...</p>
+          </div>
+        </div>
+
+        <!-- Work Room 1 -->
+        <div class="glass rounded-2xl p-5 border-t-4 border-t-blue-600">
+          <h3 class="text-sm font-bold text-white mb-3">Work Room 1</h3>
+          <div id="room-list-work1" class="space-y-2 text-xs">
+            <p class="text-slate-500">Loading devices...</p>
+          </div>
+        </div>
+
+        <!-- Work Room 2 -->
+        <div class="glass rounded-2xl p-5 border-t-4 border-t-cyan-600">
+          <h3 class="text-sm font-bold text-white mb-3">Work Room 2</h3>
+          <div id="room-list-work2" class="space-y-2 text-xs">
+            <p class="text-slate-500">Loading devices...</p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-auto py-6 border-t border-slate-900 text-center text-xs text-slate-500">
+    <p>Lumina Enterprise Observability Dashboard &bull; Powered by FastAPI & Websockets</p>
+    <p class="mt-1">Techathon Nationals 2026 Preliminary Round &bull; Team ULAB_Anonymous_3.0</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
