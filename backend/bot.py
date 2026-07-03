@@ -135,7 +135,7 @@ Friendly Response:"""
             templates = [
                 f"🚨 **CRITICAL ENERGY WASTE WARNING** | Extreme power consumption detected in {room} during off-hours at {hour_str}! {fans_count} and {lights_count} are left ON. Please turn them off immediately!",
                 f"⚠️ **URGENT ENERGY OBSERVATION** | All devices in {room} are drawing massive load at {hour_str} ({fans_count} and {lights_count} active). Let's protect our workspace and switch them off!",
-                f"🔥 **OFF-HOURS EXTREME LOAD ALERT** | Energy usage is extreme in {room} at {hour_str}! All {fans_count} and {lights_count} are active. Can someone nearby toggle them off?"
+                f"🔥 **OFF-HOURS EXTREME LOAD ALERT** | Energy usage is extreme in {room} at {hour_str}! {fans_count} and {lights_count} are active. Can someone nearby toggle them off?"
             ]
         else:
             # Array of anonymous creative warnings (standard warning)
