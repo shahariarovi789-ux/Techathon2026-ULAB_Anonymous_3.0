@@ -236,8 +236,9 @@ function renderAlerts(alerts) {
     const borderCol = isCritical ? "border-red-500/30 bg-red-500/5 text-red-300" : "border-amber-500/30 bg-amber-500/5 text-amber-300";
     const tagBg = isCritical ? "bg-red-500/10 text-red-400 border border-red-500/20" : "bg-amber-500/10 text-amber-400 border border-amber-500/20";
     const emoji = isCritical ? "🚨" : "⚠️";
+    const pulseClass = isCritical ? "critical-pulse" : "";
 
-    alertDiv.className = `border rounded-xl p-3 text-xs flex flex-col gap-1.5 transition ${borderCol}`;
+    alertDiv.className = `border rounded-xl p-3 text-xs flex flex-col gap-1.5 transition ${borderCol} ${pulseClass}`;
     alertDiv.innerHTML = `
       <div class="flex justify-between items-center">
         <span class="font-bold flex items-center gap-1.5">

@@ -127,11 +127,11 @@ h1, h2, h3, h4 {
   opacity: 1;
 }
 
-/* Floorplan containment & Dark Blueprint Filter */
+/* Floorplan containment & Clean Dimmed Filter */
 .floorplan-img-container img {
   user-select: none;
   -webkit-user-drag: none;
-  filter: invert(0.9) hue-rotate(200deg) brightness(0.65) contrast(1.15) opacity(0.8);
+  filter: brightness(0.92) contrast(1.05) opacity(0.95);
   transition: all 0.5s ease;
 }
 
@@ -261,4 +261,46 @@ button:hover {
 
 .flatpickr-weekday {
   color: #64748b !important;
+}
+
+/* Page Entry Animations (Fade In Up) */
+@keyframes fadeInUp-kf {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  opacity: 0;
+  animation: fadeInUp-kf 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+
+/* Critical Alert Breathing Glow Pulse */
+@keyframes alertPulse-kf {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.45); }
+  70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.critical-pulse {
+  animation: alertPulse-kf 2s infinite !important;
+}
+
+/* Soft transition for list items */
+.room-list-item {
+  transition: all 0.2s ease-in-out;
+}
+.room-list-item:hover {
+  background: rgba(255, 255, 255, 0.03);
+  transform: translateX(2px);
 }
