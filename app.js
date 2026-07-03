@@ -310,6 +310,24 @@ function updateSparkline(currentWatts) {
 // Render Dashboard Data Parity
 function renderDashboard(devices, alerts, metrics) {
   updateSparkline(metrics.total_watts);
+  
+  // Update circular gauge rings
+  const powerRing = document.getElementById("power-ring");
+  if (powerRing) {
+    const pct = Math.min(metrics.total_watts / 600, 1);
+    powerRing.style.strokeDashoffset = 163 - (pct * 163);
+  }
+  const kwhRing = document.getElementById("kwh-ring");
+  if (kwhRing) {
+    const pct = Math.min(metrics.estimated_daily_kwh / 10, 1);
+    kwhRing.style.strokeDashoffset = 163 - (pct * 163);
+  }
+  const projectedRing = document.getElementById("projected-ring");
+  if (projectedRing) {
+    const pct = Math.min(metrics.projected_daily_kwh / 12, 1);
+    projectedRing.style.strokeDashoffset = 163 - (pct * 163);
+  }
+
   // Update power load metrics
   document.getElementById("metric-watts").textContent = metrics.total_watts;
   document.getElementById("metric-kwh").textContent = metrics.estimated_daily_kwh.toFixed(3);
