@@ -167,7 +167,42 @@ The Discord Bot client responds to prefix commands (`!`) and supports secure adm
 
 ---
 
-## 8. Hackathon Project Metadata
+## 8. Setup & Using the Discord Bot (Step-by-Step Guide)
+
+To configure, connect, and interact with the Lumina Discord agent, follow these steps:
+
+### **Step A: Register Your Bot Application**
+1. Open the **[Discord Developer Portal](https://discord.com/developers/applications)** and click **New Application**.
+2. Go to the **Bot** tab on the left sidebar:
+   - Click **Add Bot** and confirm.
+   - Under **Privileged Gateway Intents**, enable **Message Content Intent** (This allows the bot to read prefix commands like `!status`).
+   - Click **Reset Token** and copy the generated secret key. Paste this key into `backend/.env` as the `DISCORD_BOT_TOKEN`.
+
+### **Step B: Invite the Bot to Your Server**
+1. Go to the **OAuth2** tab on the left sidebar, then click **URL Generator**.
+2. Select the **`bot`** scope.
+3. Select these **Bot Permissions**:
+   - `Send Messages`
+   - `Embed Links`
+   - `Read Message History`
+4. Copy the generated URL at the bottom of the page, open it in a browser, and choose the Discord server you want to invite the bot to.
+
+### **Step C: Get Your Channel ID**
+1. In Discord, open **User Settings** -> **Advanced**, and toggle **Developer Mode** ON.
+2. Right-click the channel where you want the bot to post warnings and accept commands, and click **Copy Channel ID**.
+3. Paste this value into `backend/.env` as the `DISCORD_CHANNEL_ID`.
+
+### **Step D: Interact in Discord**
+Once the bot is started (via `start.bat` or `start.sh`):
+- **Observe Active Devices**: Type `!status` in your channel. The bot will query the FastAPI state manager and respond with a friendly report (e.g. *"Drawing Room: 1 fan ON. Work Room 1: all off. Work Room 2: 2 lights ON"*).
+- **Check Specific Rooms**: Type `!room Work Room 2` to fetch device details for a single room.
+- **Get Consumption Metrics**: Type `!usage` to get the live office load and accumulated/projected daily kWh consumption.
+- **Emergency Shutdown**: Type `!shutdown` as a server administrator. The bot will send a bulk shutdown command to the backend to turn off all active devices.
+- **Automatic Off-Hours Alerts**: Turn ON 3 or more devices in the dashboard and set the time slider to after-hours (e.g., 9:00 PM). The bot will automatically push a high-urgency warning card (🚨 / 🔥) to the channel!
+
+---
+
+## 9. Hackathon Project Metadata
 - **Team Name**: `ULAB_Anonymous_3.0`
 - **Team Lead**: `Only Ovi`
 - **Institution**: University of Liberal Arts Bangladesh (ULAB)
