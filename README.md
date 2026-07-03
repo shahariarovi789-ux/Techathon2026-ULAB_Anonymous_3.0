@@ -109,7 +109,7 @@ chmod +x start.sh
 
 | Method | Endpoint | Description |
 |---|---|---|
-| **GET** | `/api/devices` | Retrieves the states of all 18 IoT devices (Drawing Room, Work Rooms). |
+| **GET** | `/api/devices` | Retrieves the states of all 15 IoT devices (Drawing Room, Work Rooms). |
 | **POST** | `/api/devices/{device_id}/toggle` | Toggles the ON/OFF state of a device and broadcasts it via WebSockets. |
 | **GET** | `/api/usage` | Calculates total live wattage, per-zone breakdown, and daily usage (kWh). |
 | **GET** | `/api/alerts` | Checks and returns active warning or critical anomalies. |

@@ -31,21 +31,18 @@ DEVICES: Dict[str, dict] = {
     "drawing_room_light_1": {"name": "Light 1", "type": "light", "room": "Drawing Room", "status": False, "power_draw": 0, "nominal_power": 15, "last_changed": ""},
     "drawing_room_light_2": {"name": "Light 2", "type": "light", "room": "Drawing Room", "status": False, "power_draw": 0, "nominal_power": 15, "last_changed": ""},
     "drawing_room_light_3": {"name": "Light 3", "type": "light", "room": "Drawing Room", "status": False, "power_draw": 0, "nominal_power": 15, "last_changed": ""},
-    "drawing_room_light_4": {"name": "Light 4", "type": "light", "room": "Drawing Room", "status": False, "power_draw": 0, "nominal_power": 15, "last_changed": ""},
     # Work Room 1
     "work_room_1_fan_1": {"name": "Fan 1", "type": "fan", "room": "Work Room 1", "status": False, "power_draw": 0, "nominal_power": 60, "last_changed": ""},
     "work_room_1_fan_2": {"name": "Fan 2", "type": "fan", "room": "Work Room 1", "status": False, "power_draw": 0, "nominal_power": 60, "last_changed": ""},
     "work_room_1_light_1": {"name": "Light 1", "type": "light", "room": "Work Room 1", "status": False, "power_draw": 0, "nominal_power": 15, "last_changed": ""},
     "work_room_1_light_2": {"name": "Light 2", "type": "light", "room": "Work Room 1", "status": False, "power_draw": 0, "nominal_power": 15, "last_changed": ""},
     "work_room_1_light_3": {"name": "Light 3", "type": "light", "room": "Work Room 1", "status": False, "power_draw": 0, "nominal_power": 15, "last_changed": ""},
-    "work_room_1_light_4": {"name": "Light 4", "type": "light", "room": "Work Room 1", "status": False, "power_draw": 0, "nominal_power": 15, "last_changed": ""},
     # Work Room 2
     "work_room_2_fan_1": {"name": "Fan 1", "type": "fan", "room": "Work Room 2", "status": False, "power_draw": 0, "nominal_power": 60, "last_changed": ""},
     "work_room_2_fan_2": {"name": "Fan 2", "type": "fan", "room": "Work Room 2", "status": False, "power_draw": 0, "nominal_power": 60, "last_changed": ""},
     "work_room_2_light_1": {"name": "Light 1", "type": "light", "room": "Work Room 2", "status": False, "power_draw": 0, "nominal_power": 15, "last_changed": ""},
     "work_room_2_light_2": {"name": "Light 2", "type": "light", "room": "Work Room 2", "status": False, "power_draw": 0, "nominal_power": 15, "last_changed": ""},
     "work_room_2_light_3": {"name": "Light 3", "type": "light", "room": "Work Room 2", "status": False, "power_draw": 0, "nominal_power": 15, "last_changed": ""},
-    "work_room_2_light_4": {"name": "Light 4", "type": "light", "room": "Work Room 2", "status": False, "power_draw": 0, "nominal_power": 15, "last_changed": ""},
 }
 
 # Initialize timestamps
