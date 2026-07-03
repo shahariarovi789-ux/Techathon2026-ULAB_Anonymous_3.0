@@ -696,7 +696,50 @@ function setupEventListeners() {
       doc.setTextColor(15, 23, 42);
       doc.text("Power Consumption Trend Graph", 14, 38);
       
+      // TEMPORARILY swap chart colors for print-friendly white paper PDF background
+      const originalGridColorX = powerChart.options.scales.x.grid.color;
+      const originalGridColorY = powerChart.options.scales.y.grid.color;
+      const originalTicksColorX = powerChart.options.scales.x.ticks.color;
+      const originalTicksColorY = powerChart.options.scales.y.ticks.color;
+      const originalLegendColor = powerChart.options.plugins.legend.labels.color;
+      const originalTitleColorY = powerChart.options.scales.y.title.color;
+
+      const originalBorderColors = powerChart.data.datasets.map(d => d.borderColor);
+      const originalBgColors = powerChart.data.datasets.map(d => d.backgroundColor);
+
+      // Apply white-background styles
+      powerChart.options.scales.x.grid.color = 'rgba(15, 23, 42, 0.05)';
+      powerChart.options.scales.y.grid.color = 'rgba(15, 23, 42, 0.05)';
+      powerChart.options.scales.x.ticks.color = 'rgba(15, 23, 42, 0.7)';
+      powerChart.options.scales.y.ticks.color = 'rgba(15, 23, 42, 0.7)';
+      powerChart.options.plugins.legend.labels.color = 'rgba(15, 23, 42, 0.8)';
+      powerChart.options.scales.y.title.color = 'rgba(15, 23, 42, 0.8)';
+
+      // Total Power (Dataset 0) needs to be dark navy/slate instead of white!
+      powerChart.data.datasets[0].borderColor = '#0f172a';
+      powerChart.data.datasets[0].backgroundColor = 'rgba(15, 23, 42, 0.05)';
+
+      // Update without animation to make it instant in the call stack
+      powerChart.update('none');
+
+      // Capture print-friendly image
       const chartImage = powerChart.toBase64Image();
+      
+      // RESTORE original dark-theme styles immediately
+      powerChart.options.scales.x.grid.color = originalGridColorX;
+      powerChart.options.scales.y.grid.color = originalGridColorY;
+      powerChart.options.scales.x.ticks.color = originalTicksColorX;
+      powerChart.options.scales.y.ticks.color = originalTicksColorY;
+      powerChart.options.plugins.legend.labels.color = originalLegendColor;
+      powerChart.options.scales.y.title.color = originalTitleColorY;
+
+      for (let i = 0; i < powerChart.data.datasets.length; i++) {
+        powerChart.data.datasets[i].borderColor = originalBorderColors[i];
+        powerChart.data.datasets[i].backgroundColor = originalBgColors[i];
+      }
+      
+      powerChart.update('none');
+
       doc.addImage(chartImage, 'PNG', 14, 42, 182, 90);
       
       // Data Summary Table
