@@ -127,10 +127,12 @@ h1, h2, h3, h4 {
   opacity: 1;
 }
 
-/* Floorplan containment */
+/* Floorplan containment & Dark Blueprint Filter */
 .floorplan-img-container img {
   user-select: none;
   -webkit-user-drag: none;
+  filter: invert(0.9) hue-rotate(200deg) brightness(0.65) contrast(1.15) opacity(0.8);
+  transition: all 0.5s ease;
 }
 
 /* Ambient Neon Glow Circles */
@@ -174,9 +176,9 @@ body::after {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 70px;
-  height: 70px;
-  background: radial-gradient(circle, rgba(234, 179, 8, 0.22) 0%, rgba(234, 179, 8, 0) 70%);
+  width: 80px;
+  height: 80px;
+  background: radial-gradient(circle, rgba(234, 179, 8, 0.45) 0%, rgba(234, 179, 8, 0) 70%);
   border-radius: 50%;
   z-index: -1;
   pointer-events: none;
@@ -189,9 +191,9 @@ body::after {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 65px;
-  height: 65px;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.18) 0%, rgba(59, 130, 246, 0) 70%);
+  width: 75px;
+  height: 75px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, rgba(59, 130, 246, 0) 70%);
   border-radius: 50%;
   z-index: -1;
   pointer-events: none;
