@@ -130,14 +130,22 @@ Friendly Response:"""
                 
         import random
         
-        # Array of anonymous creative warnings
-        templates = [
-            f"⚡ **Energy Guardian Alert** | Hey team! It's {hour_str} and the {room} still has {fans_count} and {lights_count} running. Did someone forget to switch them off?",
-            f"🕵️‍♂️ **Late Night Check** | Looks like the lights are still burning in {room}! We have {fans_count} and {lights_count} active at {hour_str}. Is someone still wrapping up work?",
-            f"🍃 **Eco-Nudge** | Let's save some green squares! {room} is currently empty but has {fans_count} and {lights_count} left ON at {hour_str}. Could someone nearby toggle them off?",
-            f"💤 **Sleep Mode Check** | The office has gone quiet, but {room} is still drawing power! {fans_count} and {lights_count} are active at {hour_str}. Did someone leave their desk running?",
-            f"🚨 **Quick Reminder** | Non-operational hours are here, but the {room} is still humming ({fans_count} and {lights_count} ON at {hour_str}). Please turn them off if you're heading home!"
-        ]
+        # Check if this is a critical extreme alert
+        if "critical" in raw_summary.lower() or "extreme" in raw_summary.lower():
+            templates = [
+                f"🚨 **CRITICAL ENERGY WASTE WARNING** | Extreme power consumption detected in {room} during off-hours at {hour_str}! {fans_count} and {lights_count} are left ON. Please turn them off immediately!",
+                f"⚠️ **URGENT ENERGY OBSERVATION** | All devices in {room} are drawing massive load at {hour_str} ({fans_count} and {lights_count} active). Let's protect our workspace and switch them off!",
+                f"🔥 **OFF-HOURS EXTREME LOAD ALERT** | Energy usage is extreme in {room} at {hour_str}! All {fans_count} and {lights_count} are active. Can someone nearby toggle them off?"
+            ]
+        else:
+            # Array of anonymous creative warnings (standard warning)
+            templates = [
+                f"⚡ **Energy Guardian Alert** | Hey team! It's {hour_str} and the {room} still has {fans_count} and {lights_count} running. Did someone forget to switch them off?",
+                f"🕵️‍♂️ **Late Night Check** | Looks like the lights are still burning in {room}! We have {fans_count} and {lights_count} active at {hour_str}. Is someone still wrapping up work?",
+                f"🍃 **Eco-Nudge** | Let's save some green squares! {room} is currently empty but has {fans_count} and {lights_count} left ON at {hour_str}. Could someone nearby toggle them off?",
+                f"💤 **Sleep Mode Check** | The office has gone quiet, but {room} is still drawing power! {fans_count} and {lights_count} are active at {hour_str}. Did someone leave their desk running?",
+                f"🚨 **Quick Reminder** | Non-operational hours are here, but the {room} is still humming ({fans_count} and {lights_count} ON at {hour_str}). Please turn them off if you're heading home!"
+            ]
         return random.choice(templates)
     return f"Here is the latest update: {raw_summary}"
 

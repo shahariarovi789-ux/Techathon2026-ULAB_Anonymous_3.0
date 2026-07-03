@@ -204,13 +204,24 @@ def check_all_alerts():
                 room_groups.setdefault(dev["room"], []).append(f"{dev['name']} ({dev['type']})")
             
             for room, names in room_groups.items():
+                active_count = len(names)
+                # Extreme off-hours load: if 3 or more devices are active (out of 5 per room)
+                is_extreme = active_count >= 3
+                severity = "critical" if is_extreme else "warning"
+                title = f"CRITICAL: Extreme Off-Hours Load ({room})" if is_extreme else f"After-Hours Alert ({room})"
+                
+                # Make the ID dynamic based on the active devices set so toggles push fresh alerts
+                room_key = room.replace(" ", "_").lower()
+                devices_slug = "_".join(sorted(names)).replace(" ", "_").lower()
+                alert_id = f"after_hours_{room_key}_{devices_slug}"
+                
                 ALERTS.append({
-                    "id": f"after_hours_{room.replace(' ', '_').lower()}",
+                    "id": alert_id,
                     "type": "after_hours",
-                    "title": f"After-Hours Alert ({room})",
-                    "description": f"{len(names)} devices left ON during non-operational hours ({current_sim_time}). Active: {', '.join(names)}",
+                    "title": title,
+                    "description": f"{active_count} devices left ON during non-operational hours ({current_sim_time}). Active: {', '.join(names)}",
                     "timestamp": datetime.utcnow().isoformat() + "Z",
-                    "severity": "warning",
+                    "severity": severity,
                     "simulation_time": current_sim_time
                 })
 
