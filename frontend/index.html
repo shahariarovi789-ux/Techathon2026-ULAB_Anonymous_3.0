@@ -142,46 +142,79 @@
         <h2 class="text-sm font-bold tracking-wider text-slate-400 uppercase mb-4">Live Power Consumption Meter</h2>
         
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-          <div class="bg-slate-900/60 rounded-xl p-4 border border-white/5 flex flex-col justify-between min-h-[105px] relative overflow-hidden">
-            <div class="relative z-10">
-              <p class="text-xs text-slate-400 font-medium">Office Load</p>
-              <div class="flex items-baseline gap-1 mt-1">
-                <span id="metric-watts" class="text-3xl font-bold tracking-tight text-blue-400">0</span>
-                <span class="text-sm font-semibold text-slate-500">W</span>
+          <!-- Card 1: Office Load -->
+          <div class="bg-slate-950/45 rounded-2xl p-4 border border-white/5 flex flex-col justify-between min-h-[125px] relative overflow-hidden group hover:border-blue-500/20 transition-all duration-300">
+            <div class="flex justify-between items-start relative z-10">
+              <div>
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider font-mono">Office Load</p>
+                <div class="flex items-baseline gap-1 mt-2">
+                  <span id="metric-watts" class="text-3xl font-display font-extrabold text-blue-400 tracking-tight">0</span>
+                  <span class="text-xs font-bold text-slate-500">W</span>
+                </div>
+              </div>
+              <!-- Glowing Radial Dial -->
+              <div class="relative w-16 h-16 flex items-center justify-center">
+                <svg class="w-full h-full transform -rotate-90">
+                  <circle cx="32" cy="32" r="26" class="stroke-slate-800/60" stroke-width="4.5" fill="transparent" />
+                  <circle id="power-ring" cx="32" cy="32" r="26" class="stroke-blue-500 transition-all duration-500" stroke-width="4.5" fill="transparent" stroke-dasharray="163" stroke-dashoffset="163" stroke-linecap="round" />
+                </svg>
+                <div class="absolute text-[8px] font-mono text-blue-400/80 font-bold">LOAD</div>
               </div>
             </div>
             <canvas id="load-sparkline" class="absolute bottom-0 left-0 right-0 h-10 w-full opacity-60 pointer-events-none z-0"></canvas>
-            <div class="text-[10px] text-slate-500 mt-2 border-t border-white/5 pt-1.5 flex justify-between relative z-10 bg-slate-900/90 backdrop-blur-sm -mx-4 px-4 -mb-4 pb-1">
+            <div class="text-[10px] text-slate-500 mt-2 border-t border-white/5 pt-2 flex justify-between relative z-10 bg-slate-950/80 backdrop-blur-sm -mx-4 px-4 -mb-4 pb-1.5">
               <span>Active Devices:</span>
-              <span class="font-bold text-slate-400"><span id="metric-active-count">0</span> / 15</span>
+              <span class="font-bold text-slate-300"><span id="metric-active-count">0</span> / 15</span>
             </div>
           </div>
           
-          <div class="bg-slate-900/60 rounded-xl p-4 border border-white/5 flex flex-col justify-between min-h-[105px]">
-            <div>
-              <p class="text-xs text-slate-400 font-medium">Energy Consumed Today</p>
-              <div class="flex items-baseline gap-1 mt-1">
-                <span id="metric-kwh" class="text-3xl font-bold tracking-tight text-emerald-400">0.0</span>
-                <span class="text-sm font-semibold text-slate-500">kWh</span>
+          <!-- Card 2: Energy Consumed Today -->
+          <div class="bg-slate-950/45 rounded-2xl p-4 border border-white/5 flex flex-col justify-between min-h-[125px] relative overflow-hidden group hover:border-emerald-500/20 transition-all duration-300">
+            <div class="flex justify-between items-start relative z-10">
+              <div>
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider font-mono">Energy Consumed Today</p>
+                <div class="flex items-baseline gap-1 mt-2">
+                  <span id="metric-kwh" class="text-3xl font-display font-extrabold text-emerald-400 tracking-tight">0.000</span>
+                  <span class="text-xs font-bold text-slate-500">kWh</span>
+                </div>
+              </div>
+              <!-- Glowing Radial Dial -->
+              <div class="relative w-16 h-16 flex items-center justify-center">
+                <svg class="w-full h-full transform -rotate-90">
+                  <circle cx="32" cy="32" r="26" class="stroke-slate-800/60" stroke-width="4.5" fill="transparent" />
+                  <circle id="kwh-ring" cx="32" cy="32" r="26" class="stroke-emerald-500 transition-all duration-500" stroke-width="4.5" fill="transparent" stroke-dasharray="163" stroke-dashoffset="163" stroke-linecap="round" />
+                </svg>
+                <div class="absolute text-[8px] font-mono text-emerald-400/80 font-bold">TODAY</div>
               </div>
             </div>
-            <div class="text-[10px] text-slate-500 mt-2 border-t border-white/5 pt-1.5 flex justify-between">
-              <span>Status:</span>
-              <span class="font-bold text-slate-400">Accumulated</span>
+            <div class="text-[10px] text-slate-500 mt-2 border-t border-white/5 pt-2 flex justify-between relative z-10 bg-slate-950/80 backdrop-blur-sm -mx-4 px-4 -mb-4 pb-1.5">
+              <span>Billing Target:</span>
+              <span class="font-bold text-slate-300">10 kWh Limit</span>
             </div>
           </div>
           
-          <div class="bg-slate-900/60 rounded-xl p-4 border border-white/5 flex flex-col justify-between min-h-[105px]">
-            <div>
-              <p class="text-xs text-slate-400 font-medium">Estimated Daily Total</p>
-              <div class="flex items-baseline gap-1 mt-1">
-                <span id="metric-projected-kwh" class="text-3xl font-bold tracking-tight text-indigo-400">0.000</span>
-                <span class="text-sm font-semibold text-slate-500">kWh</span>
+          <!-- Card 3: Estimated Daily Total -->
+          <div class="bg-slate-950/45 rounded-2xl p-4 border border-white/5 flex flex-col justify-between min-h-[125px] relative overflow-hidden group hover:border-indigo-500/20 transition-all duration-300">
+            <div class="flex justify-between items-start relative z-10">
+              <div>
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider font-mono">Estimated Daily Total</p>
+                <div class="flex items-baseline gap-1 mt-2">
+                  <span id="metric-projected-kwh" class="text-3xl font-display font-extrabold text-indigo-400 tracking-tight">0.000</span>
+                  <span class="text-xs font-bold text-slate-500">kWh</span>
+                </div>
+              </div>
+              <!-- Glowing Radial Dial -->
+              <div class="relative w-16 h-16 flex items-center justify-center">
+                <svg class="w-full h-full transform -rotate-90">
+                  <circle cx="32" cy="32" r="26" class="stroke-slate-800/60" stroke-width="4.5" fill="transparent" />
+                  <circle id="projected-ring" cx="32" cy="32" r="26" class="stroke-indigo-500 transition-all duration-500" stroke-width="4.5" fill="transparent" stroke-dasharray="163" stroke-dashoffset="163" stroke-linecap="round" />
+                </svg>
+                <div class="absolute text-[8px] font-mono text-indigo-400/80 font-bold">FORECAST</div>
               </div>
             </div>
-            <div class="text-[10px] text-slate-500 mt-2 border-t border-white/5 pt-1.5 flex justify-between">
-              <span>Projection:</span>
-              <span class="font-bold text-slate-400">24h Forecast</span>
+            <div class="text-[10px] text-slate-500 mt-2 border-t border-white/5 pt-2 flex justify-between relative z-10 bg-slate-950/80 backdrop-blur-sm -mx-4 px-4 -mb-4 pb-1.5">
+              <span>Projection Interval:</span>
+              <span class="font-bold text-slate-300">24h Forecast</span>
             </div>
           </div>
         </div>
@@ -332,7 +365,7 @@
         <!-- Tab Content 1: Live Floorplan -->
         <div id="content-floorplan" class="w-full">
           <!-- Floorplan relative container -->
-          <div class="relative w-full overflow-hidden rounded-2xl bg-slate-950 border border-white/5 floorplan-img-container flex justify-center items-center">
+          <div class="relative w-full overflow-hidden rounded-2xl bg-slate-950 border border-white/5 floorplan-img-container flex justify-center items-center holo-viewport">
             <img id="floorplan-image" src="office_layout.png" alt="Office Layout" class="w-full h-auto opacity-80 pointer-events-auto">
             
             <!-- Node overlays injected via JS -->
