@@ -191,16 +191,20 @@ function renderRoomLists(devices) {
       </div>
       <div class="flex items-center gap-3">
         <span class="text-[10px] text-slate-500 font-semibold uppercase">${dev.power_draw}W</span>
-        <button class="px-2 py-0.5 rounded text-[10px] font-bold transition ${
+        <div class="relative w-8 h-4.5 rounded-full transition-all duration-300 cursor-pointer flex items-center p-0.5 border ${
           dev.status 
-            ? "bg-green-500/10 text-green-400 border border-green-500/20" 
-            : "bg-slate-800 text-slate-400 border border-slate-700"
-        }">${dev.status ? "ON" : "OFF"}</button>
+            ? "bg-emerald-500/20 border-emerald-500/35 shadow-[0_0_8px_rgba(16,185,129,0.15)]" 
+            : "bg-slate-800 border-slate-700"
+        }">
+          <div class="w-3.5 h-3.5 rounded-full transition-all duration-300 ${
+            dev.status ? "translate-x-3.5 bg-emerald-400" : "bg-slate-500"
+          }"></div>
+        </div>
       </div>
     `;
 
-    // Click handler for list toggles
-    row.querySelector("button").addEventListener("click", () => {
+    // Click handler for custom toggle
+    row.querySelector(".relative").addEventListener("click", () => {
       toggleDevice(id);
     });
 
@@ -255,9 +259,57 @@ function renderAlerts(alerts) {
     alertsContainer.appendChild(alertDiv);
   });
 }
+const loadHistory = [];
+
+function updateSparkline(currentWatts) {
+  loadHistory.push(currentWatts);
+  if (loadHistory.length > 25) {
+    loadHistory.shift();
+  }
+  
+  const canvas = document.getElementById("load-sparkline");
+  if (!canvas) return;
+  
+  const ctx = canvas.getContext("2d");
+  const width = canvas.width = canvas.clientWidth || 120;
+  const height = canvas.height = 40;
+  
+  ctx.clearRect(0, 0, width, height);
+  if (loadHistory.length < 2) return;
+  
+  const max = Math.max(...loadHistory, 120); 
+  const min = Math.min(...loadHistory, 0);
+  const range = max - min || 1;
+  
+  ctx.beginPath();
+  ctx.strokeStyle = "rgba(59, 130, 246, 0.75)"; 
+  ctx.lineWidth = 1.5;
+  
+  const step = width / (loadHistory.length - 1);
+  for (let i = 0; i < loadHistory.length; i++) {
+    const x = i * step;
+    const y = height - ((loadHistory[i] - min) / range) * (height - 6) - 3;
+    if (i === 0) {
+      ctx.moveTo(x, y);
+    } else {
+      ctx.lineTo(x, y);
+    }
+  }
+  ctx.stroke();
+  
+  ctx.lineTo(width, height);
+  ctx.lineTo(0, height);
+  ctx.closePath();
+  const grad = ctx.createLinearGradient(0, 0, 0, height);
+  grad.addColorStop(0, "rgba(59, 130, 246, 0.15)");
+  grad.addColorStop(1, "rgba(59, 130, 246, 0)");
+  ctx.fillStyle = grad;
+  ctx.fill();
+}
 
 // Render Dashboard Data Parity
 function renderDashboard(devices, alerts, metrics) {
+  updateSparkline(metrics.total_watts);
   // Update power load metrics
   document.getElementById("metric-watts").textContent = metrics.total_watts;
   document.getElementById("metric-kwh").textContent = metrics.estimated_daily_kwh.toFixed(3);
