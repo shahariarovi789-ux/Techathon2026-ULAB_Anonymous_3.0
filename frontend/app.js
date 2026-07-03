@@ -23,6 +23,8 @@ let deviceCoordinates = {
 };
 let calibrationMode = false;
 let currentDevices = {};
+let powerChart = null;
+let activeTab = "floorplan";
 
 // Load coordinates config
 async function initCoordinates() {
@@ -54,6 +56,11 @@ function connectWebSocket() {
       if (data.type === "initial_state" || data.type === "telemetry_update") {
         currentDevices = data.devices;
         renderDashboard(data.devices, data.alerts, data.metrics);
+        
+        // Refresh the power chart on live updates if we are actively viewing it
+        if (activeTab === "analytics") {
+          fetchAndRenderChart();
+        }
       }
     } catch (err) {
       console.error("WebSocket message parsing error:", err);
@@ -294,6 +301,172 @@ function renderDashboard(devices, alerts, metrics) {
   }
 }
 
+// Power Analytics Chart Helper
+async function fetchAndRenderChart() {
+  const startDateInput = document.getElementById("start-date").value;
+  const endDateInput = document.getElementById("end-date").value;
+  
+  let url = `${BACKEND_REST}/api/history`;
+  const params = [];
+  if (startDateInput) {
+    params.push(`start_date=${new Date(startDateInput).toISOString()}`);
+  }
+  if (endDateInput) {
+    const d = new Date(endDateInput);
+    d.setHours(23, 59, 59, 999);
+    params.push(`end_date=${d.toISOString()}`);
+  }
+  if (params.length > 0) {
+    url += "?" + params.join("&");
+  }
+  
+  try {
+    const res = await fetch(url);
+    if (res.status === 200) {
+      const data = await res.json();
+      renderPowerChart(data);
+    }
+  } catch (err) {
+    console.error("Failed to fetch historical energy telemetry:", err);
+  }
+}
+
+function renderPowerChart(historyData) {
+  const canvas = document.getElementById("power-chart");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  
+  const labels = historyData.map(h => {
+    const d = new Date(h.timestamp);
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + 
+           ` (${d.toLocaleDateString([], { month: 'short', day: 'numeric' })})`;
+  });
+  
+  const totalWatts = historyData.map(h => h.total_watts);
+  const drawingRoom = historyData.map(h => h.drawing_room);
+  const workRoom1 = historyData.map(h => h.work_room_1);
+  const workRoom2 = historyData.map(h => h.work_room_2);
+  
+  if (powerChart) {
+    powerChart.destroy();
+  }
+  
+  powerChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Total Power (W)',
+          data: totalWatts,
+          borderColor: 'rgba(255, 255, 255, 0.9)',
+          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+          borderWidth: 3,
+          tension: 0.3,
+          fill: true
+        },
+        {
+          label: 'Drawing Room',
+          data: drawingRoom,
+          borderColor: '#f59e0b',
+          backgroundColor: 'transparent',
+          borderWidth: 1.5,
+          tension: 0.3
+        },
+        {
+          label: 'Work Room 1',
+          data: workRoom1,
+          borderColor: '#3b82f6',
+          backgroundColor: 'transparent',
+          borderWidth: 1.5,
+          tension: 0.3
+        },
+        {
+          label: 'Work Room 2',
+          data: workRoom2,
+          borderColor: '#06b6d4',
+          backgroundColor: 'transparent',
+          borderWidth: 1.5,
+          tension: 0.3
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
+      plugins: {
+        legend: {
+          labels: {
+            color: 'rgba(255, 255, 255, 0.7)',
+            font: {
+              family: 'Outfit, Inter, sans-serif',
+              size: 11,
+              weight: 'bold'
+            }
+          }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(15, 23, 42, 0.9)',
+          borderColor: 'rgba(255, 255, 255, 0.1)',
+          borderWidth: 1,
+          titleColor: '#fff',
+          bodyColor: 'rgba(255, 255, 255, 0.8)',
+          titleFont: { family: 'Outfit, Inter, sans-serif', weight: 'bold' },
+          bodyFont: { family: 'Outfit, Inter, sans-serif' }
+        }
+      },
+      scales: {
+        x: {
+          grid: {
+            color: 'rgba(255, 255, 255, 0.04)',
+            drawOnChartArea: true
+          },
+          ticks: {
+            color: 'rgba(255, 255, 255, 0.5)',
+            font: { family: 'Outfit, Inter, sans-serif', size: 10 },
+            maxTicksLimit: 8
+          }
+        },
+        y: {
+          grid: {
+            color: 'rgba(255, 255, 255, 0.04)',
+            drawOnChartArea: true
+          },
+          ticks: {
+            color: 'rgba(255, 255, 255, 0.5)',
+            font: { family: 'Outfit, Inter, sans-serif', size: 10 }
+          },
+          title: {
+            display: true,
+            text: 'Power Consumption (Watts)',
+            color: 'rgba(255, 255, 255, 0.5)',
+            font: { family: 'Outfit, Inter, sans-serif', size: 10, weight: 'bold' }
+          }
+        }
+      }
+    }
+  });
+}
+
+function initDatePickers() {
+  const startInput = document.getElementById("start-date");
+  const endInput = document.getElementById("end-date");
+  if (!startInput || !endInput) return;
+  
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+  
+  const formatDate = (d) => d.toISOString().split('T')[0];
+  
+  startInput.value = formatDate(yesterday);
+  endInput.value = formatDate(today);
+}
+
 // Setup Event Listeners
 function setupEventListeners() {
   const calToggle = document.getElementById("cal-toggle");
@@ -426,11 +599,72 @@ function setupEventListeners() {
       console.error("Failed to set simulation to manual:", err);
     }
   });
+
+  // Tab switching clicks
+  const tabFloorplan = document.getElementById("tab-floorplan");
+  const tabAnalytics = document.getElementById("tab-analytics");
+  const contentFloorplan = document.getElementById("content-floorplan");
+  const contentAnalytics = document.getElementById("content-analytics");
+  const observerDesc = document.getElementById("observer-desc");
+
+  if (tabFloorplan && tabAnalytics) {
+    tabFloorplan.addEventListener("click", () => {
+      activeTab = "floorplan";
+      contentFloorplan.classList.remove("hidden");
+      contentAnalytics.classList.add("hidden");
+      tabFloorplan.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition bg-blue-600/30 text-blue-400 border border-blue-500/20";
+      tabAnalytics.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-slate-200";
+      observerDesc.textContent = "Click device badges directly on the plan to toggle states manually or verify the calibration coordinates.";
+    });
+
+    tabAnalytics.addEventListener("click", () => {
+      activeTab = "analytics";
+      contentFloorplan.classList.add("hidden");
+      contentAnalytics.classList.remove("hidden");
+      tabAnalytics.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition bg-blue-600/30 text-blue-400 border border-blue-500/20";
+      tabFloorplan.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-slate-200";
+      observerDesc.textContent = "Graph displays historical power consumption over time. Select date frames to download operational CSV logs.";
+      fetchAndRenderChart();
+    });
+  }
+
+  // Filter history click
+  const btnFilterHistory = document.getElementById("btn-filter-history");
+  if (btnFilterHistory) {
+    btnFilterHistory.addEventListener("click", () => {
+      fetchAndRenderChart();
+    });
+  }
+
+  // Download CSV click
+  const btnDownloadReport = document.getElementById("btn-download-report");
+  if (btnDownloadReport) {
+    btnDownloadReport.addEventListener("click", () => {
+      const startDateInput = document.getElementById("start-date").value;
+      const endDateInput = document.getElementById("end-date").value;
+      
+      let url = `${BACKEND_REST}/api/history/download`;
+      const params = [];
+      if (startDateInput) {
+        params.push(`start_date=${new Date(startDateInput).toISOString()}`);
+      }
+      if (endDateInput) {
+        const d = new Date(endDateInput);
+        d.setHours(23, 59, 59, 999);
+        params.push(`end_date=${d.toISOString()}`);
+      }
+      if (params.length > 0) {
+        url += "?" + params.join("&");
+      }
+      window.location.href = url;
+    });
+  }
 }
 
 // Entry Point
 window.addEventListener("DOMContentLoaded", async () => {
   await initCoordinates();
+  initDatePickers();
   setupEventListeners();
   connectWebSocket();
 });

@@ -1,10 +1,14 @@
 import asyncio
 import json
 import random
+import sqlite3
+import csv
+import io
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 app = FastAPI(title="Lumina: Enterprise IoT Workspace Orchestrator API")
@@ -23,6 +27,68 @@ VIRTUAL_HOUR_OVERRIDE: Optional[int] = None  # None means use actual time
 SIMULATION_ACTIVE: bool = True               # True = Auto, False = Manual (demonstration)
 CUMULATIVE_WH_OFFSET: float = 4200.0         # Starting daily offset (Wh)
 SERVER_START_TIME = datetime.utcnow()
+
+DATABASE_PATH = "lumina_history.db"
+
+def init_db():
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS power_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        timestamp TEXT NOT NULL,
+        total_watts REAL NOT NULL,
+        drawing_room REAL NOT NULL,
+        work_room_1 REAL NOT NULL,
+        work_room_2 REAL NOT NULL
+    )
+    """)
+    conn.commit()
+    
+    # Pre-populate database with 24 hours of dynamic, realistic mock data if empty
+    cursor.execute("SELECT COUNT(*) FROM power_history")
+    if cursor.fetchone()[0] == 0:
+        print("⚡ Pre-populating 24 hours of historical energy telemetry data...")
+        now = datetime.utcnow()
+        for i in range(24, 0, -1):
+            time_point = now - timedelta(hours=i)
+            hour = (time_point.hour + 6) % 24 # Convert to BST approx (+6)
+            # Create realistic load curves: higher during 9 AM - 5 PM, lower at night
+            if 9 <= hour <= 17:
+                base_load = random.randint(180, 420)
+            else:
+                base_load = random.randint(20, 80)
+                
+            drawing = base_load * 0.2
+            work1 = base_load * 0.4
+            work2 = base_load * 0.4
+            
+            cursor.execute(
+                "INSERT INTO power_history (timestamp, total_watts, drawing_room, work_room_1, work_room_2) VALUES (?, ?, ?, ?, ?)",
+                (time_point.isoformat() + "Z", base_load, drawing, work1, work2)
+            )
+        conn.commit()
+    conn.close()
+
+def log_power_metric():
+    try:
+        metrics = get_metrics()
+        conn = sqlite3.connect(DATABASE_PATH)
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO power_history (timestamp, total_watts, drawing_room, work_room_1, work_room_2) VALUES (?, ?, ?, ?, ?)",
+            (
+                datetime.utcnow().isoformat() + "Z",
+                metrics["total_watts"],
+                metrics["room_breakdown"]["Drawing Room"],
+                metrics["room_breakdown"]["Work Room 1"],
+                metrics["room_breakdown"]["Work Room 2"]
+            )
+        )
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"[Database Warning] Failed to log power metrics: {e}")
 
 # Centralized State Database (Strict Schema + helper fields)
 DEVICES: Dict[str, dict] = {
@@ -192,10 +258,18 @@ async def simulation_loop():
                 "metrics": get_metrics()
             })
 
+async def metrics_logger_loop():
+    while True:
+        log_power_metric()
+        await asyncio.sleep(10) # Log every 10 seconds for live demo graphs
+
 @app.on_event("startup")
 async def startup_event():
+    init_db()
     # Start telemetry simulation loop in background
     asyncio.create_task(simulation_loop())
+    # Start metrics logging loop in background
+    asyncio.create_task(metrics_logger_loop())
 
 # REST API Endpoints
 @app.get("/api/devices")
@@ -328,6 +402,76 @@ async def websocket_endpoint(websocket: WebSocket):
         manager.disconnect(websocket)
     except Exception:
         manager.disconnect(websocket)
+
+@app.get("/api/history")
+async def get_history(start_date: Optional[str] = None, end_date: Optional[str] = None):
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    
+    query = "SELECT timestamp, total_watts, drawing_room, work_room_1, work_room_2 FROM power_history"
+    params = []
+    
+    if start_date and end_date:
+        query += " WHERE timestamp BETWEEN ? AND ?"
+        params.extend([start_date, end_date])
+    elif start_date:
+        query += " WHERE timestamp >= ?"
+        params.append(start_date)
+    elif end_date:
+        query += " WHERE timestamp <= ?"
+        params.append(end_date)
+        
+    query += " ORDER BY timestamp ASC"
+    cursor.execute(query, params)
+    rows = cursor.fetchall()
+    conn.close()
+    
+    history = []
+    for r in rows:
+        history.append({
+            "timestamp": r[0],
+            "total_watts": r[1],
+            "drawing_room": r[2],
+            "work_room_1": r[3],
+            "work_room_2": r[4]
+        })
+    return history
+
+@app.get("/api/history/download")
+async def download_history(start_date: Optional[str] = None, end_date: Optional[str] = None):
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    
+    query = "SELECT timestamp, total_watts, drawing_room, work_room_1, work_room_2 FROM power_history"
+    params = []
+    
+    if start_date and end_date:
+        query += " WHERE timestamp BETWEEN ? AND ?"
+        params.extend([start_date, end_date])
+    elif start_date:
+        query += " WHERE timestamp >= ?"
+        params.append(start_date)
+    elif end_date:
+        query += " WHERE timestamp <= ?"
+        params.append(end_date)
+        
+    query += " ORDER BY timestamp ASC"
+    cursor.execute(query, params)
+    rows = cursor.fetchall()
+    conn.close()
+    
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["Timestamp (UTC)", "Total Power (W)", "Drawing Room (W)", "Work Room 1 (W)", "Work Room 2 (W)"])
+    for r in rows:
+        writer.writerow(r)
+        
+    output.seek(0)
+    
+    headers = {
+        'Content-Disposition': 'attachment; filename="lumina_power_usage_report.csv"'
+    }
+    return StreamingResponse(iter([output.getvalue()]), media_type="text/csv", headers=headers)
 
 if __name__ == "__main__":
     import uvicorn

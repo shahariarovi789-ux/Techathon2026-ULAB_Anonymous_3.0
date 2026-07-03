@@ -209,20 +209,64 @@
     <!-- Right Column: Observer Interactive Floorplan (7 cols) -->
     <section class="lg:col-span-7 flex flex-col gap-6">
       
-      <!-- Interactive Floorplan -->
+      <!-- Interactive Observer Tabs (Floorplan & Analytics) -->
       <div class="glass rounded-3xl p-6 flex flex-col justify-between">
-        <div>
-          <h2 class="text-lg font-bold tracking-tight text-white mb-1">Office Workspace Observer (Digital Twin)</h2>
-          <p class="text-xs text-slate-400 mb-4">Click device badges directly on the plan to toggle states manually or verify the calibration coordinates.</p>
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4 border-b border-white/5 pb-4">
+          <div>
+            <h2 class="text-lg font-bold tracking-tight text-white mb-1">Office Operations Center</h2>
+            <p id="observer-desc" class="text-xs text-slate-400">Click device badges directly on the plan to toggle states manually or verify the calibration coordinates.</p>
+          </div>
+          <!-- Tab Navigation -->
+          <div class="flex bg-slate-950 p-1 rounded-xl border border-white/5 gap-1 shrink-0 self-start sm:self-auto">
+            <button id="tab-floorplan" class="px-4 py-1.5 rounded-lg text-xs font-bold transition bg-blue-600/30 text-blue-400 border border-blue-500/20">
+              Live Layout
+            </button>
+            <button id="tab-analytics" class="px-4 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-slate-200">
+              Power Analytics
+            </button>
+          </div>
         </div>
 
-        <!-- Floorplan relative container -->
-        <div class="relative w-full overflow-hidden rounded-2xl bg-slate-950 border border-white/5 floorplan-img-container flex justify-center items-center">
-          <img id="floorplan-image" src="office_layout.png" alt="Office Layout" class="w-full h-auto opacity-80 pointer-events-auto">
-          
-          <!-- Node overlays injected via JS -->
-          <div id="floorplan-overlays" class="absolute inset-0 pointer-events-none">
-            <!-- Badges positioned absolutely using coords from JSON will go here -->
+        <!-- Tab Content 1: Live Floorplan -->
+        <div id="content-floorplan" class="w-full">
+          <!-- Floorplan relative container -->
+          <div class="relative w-full overflow-hidden rounded-2xl bg-slate-950 border border-white/5 floorplan-img-container flex justify-center items-center">
+            <img id="floorplan-image" src="office_layout.png" alt="Office Layout" class="w-full h-auto opacity-80 pointer-events-auto">
+            
+            <!-- Node overlays injected via JS -->
+            <div id="floorplan-overlays" class="absolute inset-0 pointer-events-none">
+              <!-- Badges positioned absolutely using coords from JSON will go here -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab Content 2: Power Analytics Graph -->
+        <div id="content-analytics" class="hidden w-full flex flex-col gap-4">
+          <!-- Date frame selector & Download button -->
+          <div class="flex flex-wrap items-center gap-3 p-3 bg-slate-900/50 rounded-xl border border-white/5 justify-between">
+            <div class="flex flex-wrap items-center gap-2">
+              <div class="flex flex-col">
+                <span class="text-[9px] uppercase tracking-wider text-slate-500 font-bold mb-1">Start Date</span>
+                <input id="start-date" type="date" class="bg-slate-950 border border-white/10 text-xs text-slate-300 rounded px-2.5 py-1.5 focus:outline-none focus:border-blue-500 font-semibold">
+              </div>
+              <div class="flex flex-col">
+                <span class="text-[9px] uppercase tracking-wider text-slate-500 font-bold mb-1">End Date</span>
+                <input id="end-date" type="date" class="bg-slate-950 border border-white/10 text-xs text-slate-300 rounded px-2.5 py-1.5 focus:outline-none focus:border-blue-500 font-semibold">
+              </div>
+              <button id="btn-filter-history" class="mt-4 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs py-1.5 px-3 rounded transition self-end">Filter</button>
+            </div>
+            
+            <button id="btn-download-report" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-2 px-3 rounded-lg flex items-center gap-1.5 transition self-end">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Download CSV
+            </button>
+          </div>
+
+          <!-- Chart Area -->
+          <div class="w-full bg-slate-950/60 border border-white/5 rounded-2xl p-4 min-h-[300px] flex items-center justify-center relative">
+            <canvas id="power-chart" class="w-full max-h-[350px]"></canvas>
           </div>
         </div>
       </div>
@@ -264,6 +308,7 @@
     <p class="mt-1">Techathon Nationals 2026 Preliminary Round &bull; Team ULAB_Anonymous_3.0</p>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
