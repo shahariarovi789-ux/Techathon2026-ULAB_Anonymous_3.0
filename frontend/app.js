@@ -4,7 +4,23 @@ const BACKEND_REST = "http://localhost:8000";
 const BACKEND_WS = "ws://localhost:8000/ws/telemetry";
 
 let socket = null;
-let deviceCoordinates = {};
+let deviceCoordinates = {
+  "drawing_room_fan_1": {"top": 21.5, "left": 17.5},
+  "drawing_room_fan_2": {"top": 51.5, "left": 17.5},
+  "drawing_room_light_1": {"top": 19.5, "left": 11.0},
+  "drawing_room_light_2": {"top": 19.5, "left": 24.0},
+  "drawing_room_light_3": {"top": 60.5, "left": 17.5},
+  "work_room_1_fan_1": {"top": 21.5, "left": 42.5},
+  "work_room_1_fan_2": {"top": 51.5, "left": 42.5},
+  "work_room_1_light_1": {"top": 19.5, "left": 35.5},
+  "work_room_1_light_2": {"top": 19.5, "left": 49.5},
+  "work_room_1_light_3": {"top": 60.5, "left": 42.5},
+  "work_room_2_fan_1": {"top": 21.5, "left": 66.5},
+  "work_room_2_fan_2": {"top": 51.5, "left": 66.5},
+  "work_room_2_light_1": {"top": 19.5, "left": 59.5},
+  "work_room_2_light_2": {"top": 19.5, "left": 73.5},
+  "work_room_2_light_3": {"top": 60.5, "left": 66.5}
+};
 let calibrationMode = false;
 let currentDevices = {};
 
@@ -12,10 +28,11 @@ let currentDevices = {};
 async function initCoordinates() {
   try {
     const res = await fetch("floorplan_coords.json");
-    deviceCoordinates = await res.json();
-    console.log("Device coordinates loaded successfully:", deviceCoordinates);
+    const loadedCoords = await res.json();
+    deviceCoordinates = loadedCoords;
+    console.log("Device coordinates loaded successfully from JSON:", deviceCoordinates);
   } catch (err) {
-    console.error("Failed to load device coordinates config, using defaults:", err);
+    console.warn("Could not load floorplan_coords.json via HTTP/Fetch (possibly file:// protocol restriction). Using local hardcoded coordinates fallback.", err);
   }
 }
 
