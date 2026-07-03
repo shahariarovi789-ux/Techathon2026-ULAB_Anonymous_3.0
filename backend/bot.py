@@ -1,0 +1,267 @@
+import os
+import asyncio
+import aiohttp
+import discord
+from discord.ext import commands
+from dotenv import load_dotenv
+
+# Load local environment configuration
+load_dotenv()
+
+TOKEN = os.getenv("DISCORD_BOT_TOKEN", "")
+CHANNEL_ID = os.getenv("DISCORD_CHANNEL_ID", "")
+BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
+
+# Dummy user data strictly enforced per requirements
+DUMMY_USERS = [
+    {"name": "Nafisa Rahman", "email": "nafisa.rahman@yahoo.com", "phone": "+8801812345678"},
+    {"name": "Tanvir Hossain", "email": "tanvir.hossain@yahoo.com", "phone": "+8801912345678"}
+]
+
+# Set up bot with command prefix
+intents = discord.Intents.default()
+intents.message_content = True
+bot = commands.Bot(command_prefix="!", intents=intents)
+
+# Set of notified alert IDs to avoid spamming
+notified_alerts = set()
+
+async def query_local_llm(prompt: str) -> str:
+    """Queries the local 4-bit quantized Qwen2.5-coder:3b model via Ollama."""
+    try:
+        async with aiohttp.ClientSession() as session:
+            payload = {
+                "model": "qwen2.5-coder:3b",
+                "prompt": prompt,
+                "stream": False,
+                "options": {
+                    "temperature": 0.7,
+                    "num_predict": 120
+                }
+            }
+            async with session.post("http://localhost:11434/api/generate", json=payload, timeout=6) as response:
+                if response.status == 200:
+                    res_json = await response.json()
+                    text = res_json.get("response", "").strip()
+                    if text:
+                        return text
+    except Exception as e:
+        print(f"[Ollama LLM Warning] Local LLM offline or unreachable. Fallback template will be used. Error: {e}")
+    return ""
+
+async def generate_conversational_response(raw_summary: str, context_type: str) -> str:
+    """Wrapper that tries to generate an LLM response, falling back to a structured template."""
+    prompt = f"""
+You are Lumina, a helpful and friendly Enterprise IoT assistant for our office.
+Your task is to translate the raw status summary below into a warm, natural, and human-readable operational message.
+Avoid raw data dumps or robotic bullet lists. Write 2-3 friendly sentences.
+
+You should occasionally mention who might be responsible using the registered team staff:
+- Nafisa Rahman (Email: nafisa.rahman@yahoo.com, Phone: +8801812345678)
+- Tanvir Hossain (Email: tanvir.hossain@yahoo.com, Phone: +8801912345678)
+
+Context type: {context_type}
+Raw status summary: {raw_summary}
+
+Friendly Response:"""
+
+    llm_response = await query_local_llm(prompt)
+    if llm_response:
+        return llm_response
+    
+    # Fallback template if Ollama is not active
+    # Incorporate the dummy users in fallback to make sure they are utilized!
+    user_mention = DUMMY_USERS[0]["name"] if "Drawing" in raw_summary else DUMMY_USERS[1]["name"]
+    
+    if context_type == "status":
+        return (f"Hi there! Here's what's currently running: {raw_summary}. "
+                f"It looks like {user_mention} might still be wrapping up some tasks in those active zones.")
+    elif context_type == "room":
+        return f"Sure thing! For that room, here is the current update: {raw_summary}. Let me know if you need help toggling anything!"
+    elif context_type == "usage":
+        return (f"Here is our current power draw report: {raw_summary}. "
+                f"We are keeping an eye on it. Let's make sure Nafisa and Tanvir know to turn off devices when leaving!")
+    return f"Here is the latest update: {raw_summary}"
+
+# Bot commands
+@bot.event
+async def on_ready():
+    print(f"🤖 Discord Bot connected as {bot.user.name} ({bot.user.id})")
+    # Start the proactive anomaly checker loop
+    bot.loop.create_task(proactive_alert_loop())
+
+@bot.command(name="status")
+async def status_command(ctx):
+    """Fetch status for all rooms and humanize."""
+    print("Received command: !status")
+    async with ctx.typing():
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(f"{BACKEND_URL}/api/devices") as response:
+                    if response.status == 200:
+                        devices = await response.json()
+                        # Group devices by room and state
+                        room_summaries = []
+                        for room in ["Drawing Room", "Work Room 1", "Work Room 2"]:
+                            room_devs = [dev for dev in devices.values() if dev["room"] == room]
+                            active_fans = sum(1 for dev in room_devs if dev["status"] and dev["type"] == "fan")
+                            active_lights = sum(1 for dev in room_devs if dev["status"] and dev["type"] == "light")
+                            
+                            total_active = active_fans + active_lights
+                            if total_active == 0:
+                                room_summaries.append(f"{room}: all off")
+                            else:
+                                details = []
+                                if active_fans > 0:
+                                    details.append(f"{active_fans} fan{'s' if active_fans > 1 else ''} ON")
+                                if active_lights > 0:
+                                    details.append(f"{active_lights} light{'s' if active_lights > 1 else ''} ON")
+                                room_summaries.append(f"{room}: {', '.join(details)}")
+                        
+                        raw_summary = ". ".join(room_summaries) + "."
+                        friendly_summary = await generate_conversational_response(raw_summary, "status")
+                        await ctx.send(friendly_summary)
+                    else:
+                        await ctx.send("⚠️ Failed to reach the state manager backend API.")
+        except Exception as e:
+            await ctx.send(f"⚠️ Error occurred while communication with backend: {e}")
+
+@bot.command(name="room")
+async def room_command(ctx, *, room_name: str):
+    """Fetch status for a specific room."""
+    print(f"Received command: !room {room_name}")
+    async with ctx.typing():
+        # Clean the input to map to rooms
+        room_clean = room_name.lower().replace("_", " ").strip()
+        target_room = None
+        if "draw" in room_clean:
+            target_room = "Drawing Room"
+        elif "work1" in room_clean or "work room 1" in room_clean or "room 1" in room_clean:
+            target_room = "Work Room 1"
+        elif "work2" in room_clean or "work room 2" in room_clean or "room 2" in room_clean:
+            target_room = "Work Room 2"
+            
+        if not target_room:
+            await ctx.send("❌ Room not recognized. Please specify: `Drawing Room`, `Work Room 1`, or `Work Room 2`.")
+            return
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(f"{BACKEND_URL}/api/devices") as response:
+                    if response.status == 200:
+                        devices = await response.json()
+                        room_devs = [dev for dev in devices.values() if dev["room"] == target_room]
+                        
+                        # Count states
+                        active_fans = sum(1 for dev in room_devs if dev["status"] and dev["type"] == "fan")
+                        active_lights = sum(1 for dev in room_devs if dev["status"] and dev["type"] == "light")
+                        
+                        total_active = active_fans + active_lights
+                        if total_active == 0:
+                            raw_summary = f"All 6 devices in {target_room} are currently switched OFF."
+                        else:
+                            details = []
+                            if active_fans > 0:
+                                details.append(f"{active_fans} fan{'s' if active_fans > 1 else ''} active")
+                            if active_lights > 0:
+                                details.append(f"{active_lights} light{'s' if active_lights > 1 else ''} active")
+                            raw_summary = f"In {target_room}, we have {', '.join(details)}."
+                            
+                        friendly_summary = await generate_conversational_response(raw_summary, "room")
+                        await ctx.send(friendly_summary)
+                    else:
+                        await ctx.send("⚠️ Failed to reach the state manager backend API.")
+        except Exception as e:
+            await ctx.send(f"⚠️ Error communicating with backend: {e}")
+
+@bot.command(name="usage")
+async def usage_command(ctx):
+    """Fetch total power draw and daily estimated usage."""
+    print("Received command: !usage")
+    async with ctx.typing():
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(f"{BACKEND_URL}/api/usage") as response:
+                    if response.status == 200:
+                        metrics = await response.json()
+                        total_watts = metrics.get("total_watts", 0)
+                        daily_kwh = metrics.get("estimated_daily_kwh", 0.0)
+                        
+                        raw_summary = f"Total power right now: {total_watts}W. Today's estimated usage is {daily_kwh} kWh."
+                        friendly_summary = await generate_conversational_response(raw_summary, "usage")
+                        await ctx.send(friendly_summary)
+                    else:
+                        await ctx.send("⚠️ Failed to reach the usage API.")
+        except Exception as e:
+            await ctx.send(f"⚠️ Error communicating with backend: {e}")
+
+# Proactive alert monitoring loop
+async def proactive_alert_loop():
+    """Background task to poll API for active alerts and dispatch channel webhooks/messages."""
+    global notified_alerts
+    await bot.wait_until_ready()
+    
+    # Resolve target channel
+    target_channel = None
+    if CHANNEL_ID:
+        try:
+            target_channel = bot.get_channel(int(CHANNEL_ID)) or await bot.fetch_channel(int(CHANNEL_ID))
+        except Exception as e:
+            print(f"[Discord Bot Warning] Could not resolve channel ID {CHANNEL_ID}: {e}")
+            
+    print(f"📢 Proactive Anomaly Detector started. Listening to alerts on backend...")
+    
+    while not bot.is_closed():
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(f"{BACKEND_URL}/api/alerts") as response:
+                    if response.status == 200:
+                        alerts = await response.json()
+                        current_alert_ids = set()
+                        
+                        for alert in alerts:
+                            alert_id = alert["id"]
+                            current_alert_ids.add(alert_id)
+                            
+                            # If alert is new, dispatch message
+                            if alert_id not in notified_alerts:
+                                title = alert["title"]
+                                desc = alert["description"]
+                                severity = alert["severity"]
+                                
+                                emoji = "⚠️" if severity == "warning" else "🚨"
+                                embed_color = discord.Color.orange() if severity == "warning" else discord.Color.red()
+                                
+                                embed = discord.Embed(
+                                    title=f"{emoji} {title}",
+                                    description=desc,
+                                    color=embed_color
+                                )
+                                embed.add_field(name="Severity", value=severity.upper(), inline=True)
+                                embed.add_field(name="Timestamp", value=alert["timestamp"], inline=True)
+                                embed.set_footer(text="Lumina Enterprise Observability Bot")
+                                
+                                # Send to channel if configured
+                                if target_channel:
+                                    await target_channel.send(embed=embed)
+                                    print(f"[Discord Bot Alert Sent] {title}")
+                                else:
+                                    print(f"[Console Only Alert - Channel ID Not Configured] {title}: {desc}")
+                                    
+                                notified_alerts.add(alert_id)
+                        
+                        # Clean up resolved alerts
+                        notified_alerts = notified_alerts.intersection(current_alert_ids)
+        except Exception as e:
+            print(f"[Proactive Loop Warning] Error checking alerts on backend: {e}")
+            
+        await asyncio.sleep(30)
+
+def main():
+    if not TOKEN:
+        print("[Discord Bot Error] DISCORD_BOT_TOKEN not found in environment. Please set it in backend/.env")
+        return
+    bot.run(TOKEN)
+
+if __name__ == "__main__":
+    main()

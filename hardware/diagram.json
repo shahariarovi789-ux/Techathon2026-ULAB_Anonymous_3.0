@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "author": "Only Ovi",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-esp32-devkit-v1", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    { "type": "wokwi-led", "id": "led_light1", "top": -120, "left": -80, "attrs": { "color": "yellow" } },
+    { "type": "wokwi-led", "id": "led_light2", "top": -120, "left": 0, "attrs": { "color": "yellow" } },
+    { "type": "wokwi-led", "id": "led_light3", "top": -120, "left": 80, "attrs": { "color": "yellow" } },
+    { "type": "wokwi-relay-module", "id": "relay_fan1", "top": 120, "left": -100, "attrs": {} },
+    { "type": "wokwi-relay-module", "id": "relay_fan2", "top": 120, "left": 100, "attrs": {} }
+  ],
+  "connections": [
+    [ "esp:GND.1", "led_light1:C", "black", [] ],
+    [ "esp:GND.1", "led_light2:C", "black", [] ],
+    [ "esp:GND.1", "led_light3:C", "black", [] ],
+    [ "esp:19", "led_light1:A", "yellow", [] ],
+    [ "esp:21", "led_light2:A", "yellow", [] ],
+    [ "esp:22", "led_light3:A", "yellow", [] ],
+    [ "esp:5", "relay_fan1:IN", "blue", [] ],
+    [ "esp:18", "relay_fan2:IN", "blue", [] ],
+    [ "esp:GND.2", "relay_fan1:GND", "black", [] ],
+    [ "esp:GND.2", "relay_fan2:GND", "black", [] ],
+    [ "esp:3V3.1", "relay_fan1:VCC", "red", [] ],
+    [ "esp:3V3.1", "relay_fan2:VCC", "red", [] ]
+  ],
+  "dependencies": {}
+}

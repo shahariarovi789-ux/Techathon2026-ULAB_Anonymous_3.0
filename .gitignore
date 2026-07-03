@@ -1,0 +1,28 @@
+# Caches and builds
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ipynb_checkpoints
+
+# Environment configurations
+.env
+.env.local
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# IDE settings
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
