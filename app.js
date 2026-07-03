@@ -665,6 +665,15 @@ function setupEventListeners() {
     });
   }
 
+  // Today history click
+  const btnTodayHistory = document.getElementById("btn-today-history");
+  if (btnTodayHistory) {
+    btnTodayHistory.addEventListener("click", () => {
+      initDatePickers();
+      fetchAndRenderChart();
+    });
+  }
+
   // Download CSV click
   const btnDownloadReport = document.getElementById("btn-download-report");
   if (btnDownloadReport) {
