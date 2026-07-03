@@ -171,10 +171,21 @@ def get_metrics() -> dict:
     accumulated_wh = total_watts * uptime_hours
     estimated_kwh = (CUMULATIVE_WH_OFFSET + accumulated_wh) / 1000.0
     
+    # Calculate remaining hours of the simulated day to project 24h total
+    current_time = datetime.now()
+    hour = current_time.hour
+    if VIRTUAL_HOUR_OVERRIDE is not None:
+        hour = VIRTUAL_HOUR_OVERRIDE
+    
+    remaining_hours = max(0, 24 - hour)
+    projected_additional_wh = total_watts * remaining_hours
+    projected_kwh = (CUMULATIVE_WH_OFFSET + accumulated_wh + projected_additional_wh) / 1000.0
+    
     return {
         "total_watts": total_watts,
         "room_breakdown": room_breakdown,
         "estimated_daily_kwh": round(estimated_kwh, 3),
+        "projected_daily_kwh": round(projected_kwh, 3),
         "uptime_seconds": int((datetime.utcnow() - SERVER_START_TIME).total_seconds()),
         "simulation_active": SIMULATION_ACTIVE,
         "virtual_time": get_virtual_time_string()

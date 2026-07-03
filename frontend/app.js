@@ -261,6 +261,19 @@ function renderDashboard(devices, alerts, metrics) {
   document.getElementById("metric-watts").textContent = metrics.total_watts;
   document.getElementById("metric-kwh").textContent = metrics.estimated_daily_kwh.toFixed(3);
 
+  // Update active devices count
+  const activeCount = Object.values(devices).filter(dev => dev.status).length;
+  const metricActiveCount = document.getElementById("metric-active-count");
+  if (metricActiveCount) {
+    metricActiveCount.textContent = activeCount;
+  }
+
+  // Update projected 24h energy
+  const metricProjectedKwh = document.getElementById("metric-projected-kwh");
+  if (metricProjectedKwh && metrics.projected_daily_kwh !== undefined) {
+    metricProjectedKwh.textContent = metrics.projected_daily_kwh.toFixed(3);
+  }
+
   // Update Progress Bars & breakdown values
   const breakdowns = {
     "Drawing Room": { watts: metrics.room_breakdown["Drawing Room"], bar: "bar-drawing", text: "breakdown-drawing" },
