@@ -27,9 +27,71 @@
       }
     }
   </script>
-  <link rel="stylesheet" href="styles.css?v=2.1">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Ambient Neon Glow Circles */
+    .bg-orb-blue {
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, rgba(99, 102, 241, 0) 70%);
+      filter: blur(80px);
+    }
+    .bg-orb-purple {
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.06) 0%, rgba(16, 185, 129, 0) 70%);
+      filter: blur(80px);
+    }
+    
+    /* Active Indicator Glowing Halos */
+    .light-glow::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 70px;
+      height: 70px;
+      background: radial-gradient(circle, rgba(234, 179, 8, 0.22) 0%, rgba(234, 179, 8, 0) 70%);
+      border-radius: 50%;
+      z-index: -1;
+      pointer-events: none;
+      animation: pulse-glow-kf 2s ease-in-out infinite alternate;
+    }
+    
+    .fan-spin::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 65px;
+      height: 65px;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.18) 0%, rgba(59, 130, 246, 0) 70%);
+      border-radius: 50%;
+      z-index: -1;
+      pointer-events: none;
+      animation: pulse-glow-kf 2s ease-in-out infinite alternate-reverse;
+    }
+    
+    @keyframes pulse-glow-kf {
+      0% { transform: translate(-50%, -50%) scale(0.92); opacity: 0.7; }
+      100% { transform: translate(-50%, -50%) scale(1.18); opacity: 1; }
+    }
+    
+    /* Interactive Control Hover Effects */
+    button {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    button:hover {
+      transform: translateY(-1.5px);
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.25);
+    }
+  </style>
 </head>
-<body class="bg-darkbg text-slate-100 min-h-screen flex flex-col selection:bg-blue-500 selection:text-white">
+<body class="bg-darkbg text-slate-100 min-h-screen flex flex-col selection:bg-blue-500 selection:text-white relative overflow-x-hidden">
+
+  <!-- Ambient background glow orbs -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+    <div class="absolute -top-[10%] -left-[10%] w-[50vw] h-[50vw] rounded-full bg-orb-blue"></div>
+    <div class="absolute -bottom-[10%] -right-[10%] w-[50vw] h-[50vw] rounded-full bg-orb-purple"></div>
+  </div>
 
   <!-- Header -->
   <header class="glass sticky top-0 z-40 px-6 py-4 flex flex-wrap justify-between items-center gap-4">
