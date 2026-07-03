@@ -119,7 +119,45 @@ chmod +x start.sh
 
 ---
 
-## 6. AI Integration & Persona (Lumina)
-- **Local LLM**: Utilizes `qwen2.5-coder:3b` (Quantized Q4_K_M) via Ollama. 
-- **Prompt Engineering**: The Discord agent translates raw JSON device logs into human-friendly reports, incorporating registered team staff members (**Nafisa Rahman** and **Tanvir Hossain**) as context to create warm, natural conversational summaries.
-- **Proactive Warnings**: A background thread checks the `/api/alerts` endpoint every 30 seconds. If a warning (after-hours load) or critical alarm (2-hour neglected load) is active, the bot generates a friendly prompt and dispatches an embed directly to the target Discord channel.
+## 6. AI Integration & Anonymized Reports
+- **Local LLM**: Utilizes `qwen2.5-coder:3b` (Quantized Q4_K_M) via Ollama.
+- **Anonymization & Constraints**: The prompt engineering parameters strictly enforce anonymity rules. The AI translates raw JSON logs into conversational alerts while completely avoiding employee names (such as Nafisa or Tanvir) or administrative roles to prevent security leakage.
+- **Proactive Warnings**: A background listener queries `/api/alerts` periodically. If a warning (after-hours usage) or critical alert (extreme off-hours load) is active, the bot generates a friendly, high-urgency message block containing warning indicators (e.g. 🚨, 🔥) and posts it to the configured channel.
+
+---
+
+## 7. Representative Hardware Schematic Pin-Mapping
+
+The project includes a complete Wokwi hardware prototype mapping in the `/hardware` folder representing a single office zone (e.g. 2 Fans and 3 Lights) wired to an ESP32 microcontroller:
+
+| Component | ESP32 GPIO Pin | Physical Connection | Description |
+|---|---|---|---|
+| **Fan 1 Actuator** | `GPIO 5` (D5) | Relay Module IN1 | Toggles Fan 1 power relay (COM to 5V, NO to Fan Motor 1 pin 1) |
+| **Fan 2 Actuator** | `GPIO 18` (D18) | Relay Module IN2 | Toggles Fan 2 power relay (COM to 5V, NO to Fan Motor 2 pin 1) |
+| **Light 1 Indicator** | `GPIO 19` (D19) | 330Ω -> LED 1 Anode | Drives Light 1 indicator LED |
+| **Light 2 Indicator** | `GPIO 21` (D21) | 330Ω -> LED 2 Anode | Drives Light 2 indicator LED |
+| **Light 3 Indicator** | `GPIO 22` (D22) | 330Ω -> LED 3 Anode | Drives Light 3 indicator LED |
+| **Fan 1 Manual Switch** | `GPIO 12` (D12) | Pushbutton Pin 1A | Manual toggle switch for Fan 1 (2A to GND) |
+| **Fan 2 Manual Switch** | `GPIO 13` (D13) | Pushbutton Pin 1A | Manual toggle switch for Fan 2 (2A to GND) |
+| **Light 1 Manual Switch** | `GPIO 14` (D14) | Pushbutton Pin 1A | Manual toggle switch for Light 1 (2A to GND) |
+| **Light 2 Manual Switch** | `GPIO 25` (D25) | Pushbutton Pin 1A | Manual toggle switch for Light 2 (2A to GND) |
+| **Light 3 Manual Switch** | `GPIO 26` (D26) | Pushbutton Pin 1A | Manual toggle switch for Light 3 (2A to GND) |
+| **ACS712 Current Sensor** | `GPIO 34` (D34) | Potentiometer wiper SIG | Analog signal input simulating current draw |
+
+---
+
+## 8. Discord Commands & Administrative Security
+
+The Discord Bot client responds to prefix commands (`!`) and supports secure administrative commands:
+
+- **`!status`**: Displays a humanized conversational report of the active devices across the three rooms.
+- **`!room <room_name>`**: Fetches the active appliance count and status for a specific target room.
+- **`!usage`**: Summarizes the office load in Watts, actual daily accumulated energy (kWh), and the projected 24-hour cycle estimation.
+- **`!shutdown`**: *(Admin Only)* Triggers a remote bulk command to instantly turn off all 15 active lights and fans. This command is restricted using `@commands.has_permissions(administrator=True)`. Attempting execution without admin permissions outputs: `❌ Access Denied: You do not have the required permissions to execute this command.`
+
+---
+
+## 9. Hackathon Project Metadata
+- **Team Name**: `ULAB_Anonymous_3.0`
+- **Team Lead**: `Only Ovi`
+- **Institution**: University of Liberal Arts Bangladesh (ULAB)
