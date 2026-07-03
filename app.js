@@ -308,14 +308,21 @@ async function fetchAndRenderChart() {
   
   let url = `${BACKEND_REST}/api/history`;
   const params = [];
+  
   if (startDateInput) {
-    params.push(`start_date=${new Date(startDateInput).toISOString()}`);
+    const startD = new Date(startDateInput);
+    if (!isNaN(startD.getTime())) {
+      params.push(`start_date=${startD.toISOString()}`);
+    }
   }
   if (endDateInput) {
-    const d = new Date(endDateInput);
-    d.setHours(23, 59, 59, 999);
-    params.push(`end_date=${d.toISOString()}`);
+    const endD = new Date(endDateInput);
+    if (!isNaN(endD.getTime())) {
+      endD.setHours(23, 59, 59, 999);
+      params.push(`end_date=${endD.toISOString()}`);
+    }
   }
+  
   if (params.length > 0) {
     url += "?" + params.join("&");
   }
@@ -333,8 +340,25 @@ async function fetchAndRenderChart() {
 
 function renderPowerChart(historyData) {
   const canvas = document.getElementById("power-chart");
-  if (!canvas) return;
+  const noDataEl = document.getElementById("chart-no-data");
+  if (!canvas || !noDataEl) return;
   const ctx = canvas.getContext("2d");
+  
+  if (!historyData || historyData.length === 0) {
+    // Hide chart and show "No Data" message
+    canvas.classList.add("hidden");
+    noDataEl.classList.remove("hidden");
+    
+    if (powerChart) {
+      powerChart.destroy();
+      powerChart = null;
+    }
+    return;
+  }
+  
+  // Show chart and hide warning
+  canvas.classList.remove("hidden");
+  noDataEl.classList.add("hidden");
   
   const labels = historyData.map(h => {
     const d = new Date(h.timestamp);
