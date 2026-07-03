@@ -51,7 +51,25 @@ async def query_local_llm(prompt: str) -> str:
 
 async def generate_conversational_response(raw_summary: str, context_type: str) -> str:
     """Wrapper that tries to generate an LLM response, falling back to a structured template."""
-    prompt = f"""
+    if context_type == "alert":
+        prompt = f"""
+You are Lumina, a friendly and helpful office assistant.
+You noticed an anomaly/alert in the workspace.
+Your task is to write a warm, friendly, and informal warning nudge to the office members in our Discord channel.
+Avoid robotic system logs, technical terms, or severity labels. Keep it natural, warm, and helpful.
+End with a gentle question asking if someone forgot to leave or turn off the devices.
+
+Registered staff members (use them naturally if appropriate):
+- Nafisa Rahman (Email: nafisa.rahman@yahoo.com, Phone: +8801812345678)
+- Tanvir Hossain (Email: tanvir.hossain@yahoo.com, Phone: +8801912345678)
+
+Alert Details: {raw_summary}
+
+Example: "⚠️ Hey! Work Room 2 still has 2 fans and 3 lights ON and it's 10 PM. Did someone forget to leave?"
+
+Friendly Alert Message:"""
+    else:
+        prompt = f"""
 You are Lumina, a helpful and friendly Enterprise IoT assistant for our office.
 Your task is to translate the raw status summary below into a warm, natural, and human-readable operational message.
 Avoid raw data dumps or robotic bullet lists. Write 2-3 friendly sentences.
@@ -70,7 +88,6 @@ Friendly Response:"""
         return llm_response
     
     # Fallback template if Ollama is not active
-    # Incorporate the dummy users in fallback to make sure they are utilized!
     user_mention = DUMMY_USERS[0]["name"] if "Drawing" in raw_summary else DUMMY_USERS[1]["name"]
     
     if context_type == "status":
@@ -81,6 +98,35 @@ Friendly Response:"""
     elif context_type == "usage":
         return (f"Here is our current power draw report: {raw_summary}. "
                 f"We are keeping an eye on it. Let's make sure Nafisa and Tanvir know to turn off devices when leaving!")
+    elif context_type == "alert":
+        room = "Work Room 2"
+        if "Drawing" in raw_summary:
+            room = "Drawing Room"
+        elif "Work Room 1" in raw_summary or "work1" in raw_summary:
+            room = "Work Room 1"
+        
+        fans_count = "1 fan"
+        if "2 fans" in raw_summary or "2 active" in raw_summary:
+            fans_count = "2 fans"
+            
+        lights_count = "2 lights"
+        if "3 lights" in raw_summary or "3 active" in raw_summary:
+            lights_count = "3 lights"
+        elif "1 light" in raw_summary or "1 active" in raw_summary:
+            lights_count = "1 light"
+            
+        # Parse simulated hour
+        hour_str = "after hours"
+        for h in range(24):
+            if f"({h:02d}:00)" in raw_summary or f" {h:02d}:00" in raw_summary:
+                if h >= 12:
+                    hour_str = f"{h-12 if h > 12 else 12} PM"
+                else:
+                    hour_str = f"{h if h > 0 else 12} AM"
+                break
+                
+        emoji = "⚠️" if "after_hours" in raw_summary.lower() or "warning" in raw_summary.lower() else "🚨"
+        return f"{emoji} Hey! {room} still has {fans_count} and {lights_count} ON and it's {hour_str}. Did someone forget to leave?"
     return f"Here is the latest update: {raw_summary}"
 
 # Bot commands
@@ -229,24 +275,15 @@ async def proactive_alert_loop():
                                 desc = alert["description"]
                                 severity = alert["severity"]
                                 
-                                emoji = "⚠️" if severity == "warning" else "🚨"
-                                embed_color = discord.Color.orange() if severity == "warning" else discord.Color.red()
-                                
-                                embed = discord.Embed(
-                                    title=f"{emoji} {title}",
-                                    description=desc,
-                                    color=embed_color
-                                )
-                                embed.add_field(name="Severity", value=severity.upper(), inline=True)
-                                embed.add_field(name="Timestamp", value=alert["timestamp"], inline=True)
-                                embed.set_footer(text="Lumina Enterprise Observability Bot")
+                                # Generate conversational warning message via local LLM / template fallback
+                                friendly_alert = await generate_conversational_response(f"Alert: {title}. Details: {desc}", "alert")
                                 
                                 # Send to channel if configured
                                 if target_channel:
-                                    await target_channel.send(embed=embed)
-                                    print(f"[Discord Bot Alert Sent] {title}")
+                                    await target_channel.send(friendly_alert)
+                                    print(f"[Discord Bot Alert Sent] {friendly_alert}")
                                 else:
-                                    print(f"[Console Only Alert - Channel ID Not Configured] {title}: {desc}")
+                                    print(f"[Console Only Alert - Channel ID Not Configured] {friendly_alert}")
                                     
                                 notified_alerts.add(alert_id)
                         
