@@ -453,18 +453,23 @@ function renderPowerChart(historyData) {
 }
 
 function initDatePickers() {
-  const startInput = document.getElementById("start-date");
-  const endInput = document.getElementById("end-date");
-  if (!startInput || !endInput) return;
-  
   const today = new Date();
   const yesterday = new Date();
   yesterday.setDate(today.getDate() - 1);
   
-  const formatDate = (d) => d.toISOString().split('T')[0];
-  
-  startInput.value = formatDate(yesterday);
-  endInput.value = formatDate(today);
+  flatpickr("#start-date", {
+    theme: "dark",
+    dateFormat: "Y-m-d",
+    defaultDate: yesterday,
+    disableMobile: "true"
+  });
+
+  flatpickr("#end-date", {
+    theme: "dark",
+    dateFormat: "Y-m-d",
+    defaultDate: today,
+    disableMobile: "true"
+  });
 }
 
 // Setup Event Listeners
