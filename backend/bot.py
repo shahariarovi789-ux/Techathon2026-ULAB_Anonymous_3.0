@@ -58,9 +58,7 @@ Your task is to write a highly creative, warm, and conversational alert message 
 Avoid boring, repetitive templates. Be spontaneous, fun, yet clear!
 Vary your tone—sometimes use light humor, sometimes a friendly eco-warning, and sometimes a late-night check-in.
 
-You should occasionally mention who might be responsible using the registered team staff:
-- Nafisa Rahman (Email: nafisa.rahman@yahoo.com, Phone: +8801812345678)
-- Tanvir Hossain (Email: tanvir.hossain@yahoo.com, Phone: +8801912345678)
+CRITICAL CONSTRAINT: Do NOT mention any individual staff member names or employee names (like Nafisa, Tanvir, etc.) in the alert message. The warning must be anonymous.
 
 Alert Details: {raw_summary}
 
@@ -125,15 +123,13 @@ Friendly Response:"""
                 break
                 
         import random
-        user1 = DUMMY_USERS[0]["name"]
-        user2 = DUMMY_USERS[1]["name"]
         
-        # Array of creative warnings
+        # Array of anonymous creative warnings
         templates = [
             f"⚡ **Energy Guardian Alert** | Hey team! It's {hour_str} and the {room} still has {fans_count} and {lights_count} running. Did someone forget to switch them off?",
-            f"🕵️‍♂️ **Late Night Check** | Looks like the lights are still burning in {room}! We have {fans_count} and {lights_count} active at {hour_str}. {user1}, is that you wrapping up late?",
+            f"🕵️‍♂️ **Late Night Check** | Looks like the lights are still burning in {room}! We have {fans_count} and {lights_count} active at {hour_str}. Is someone still wrapping up work?",
             f"🍃 **Eco-Nudge** | Let's save some green squares! {room} is currently empty but has {fans_count} and {lights_count} left ON at {hour_str}. Could someone nearby toggle them off?",
-            f"💤 **Sleep Mode Check** | The office has gone quiet, but {room} is still drawing power! {fans_count} and {lights_count} are active at {hour_str}. {user2}, did you leave your desk running?",
+            f"💤 **Sleep Mode Check** | The office has gone quiet, but {room} is still drawing power! {fans_count} and {lights_count} are active at {hour_str}. Did someone leave their desk running?",
             f"🚨 **Quick Reminder** | Non-operational hours are here, but the {room} is still humming ({fans_count} and {lights_count} ON at {hour_str}). Please turn them off if you're heading home!"
         ]
         return random.choice(templates)
