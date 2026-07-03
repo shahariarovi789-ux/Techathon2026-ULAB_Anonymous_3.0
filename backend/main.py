@@ -20,6 +20,7 @@ app.add_middleware(
 
 # Configuration overrides for demo/judging purposes
 VIRTUAL_HOUR_OVERRIDE: Optional[int] = None  # None means use actual time
+SIMULATION_ACTIVE: bool = True               # True = Auto, False = Manual (demonstration)
 CUMULATIVE_WH_OFFSET: float = 4200.0         # Starting daily offset (Wh)
 SERVER_START_TIME = datetime.utcnow()
 
@@ -97,7 +98,8 @@ def get_metrics() -> dict:
         "total_watts": total_watts,
         "room_breakdown": room_breakdown,
         "estimated_daily_kwh": round(estimated_kwh, 3),
-        "uptime_seconds": int((datetime.utcnow() - SERVER_START_TIME).total_seconds())
+        "uptime_seconds": int((datetime.utcnow() - SERVER_START_TIME).total_seconds()),
+        "simulation_active": SIMULATION_ACTIVE
     }
 
 # Anomaly Alerts Checker
@@ -167,27 +169,28 @@ async def simulation_loop():
     while True:
         await asyncio.sleep(15)
         
-        # Probabilistically toggle 1 or 2 random devices
-        num_mutations = random.randint(1, 2)
-        target_ids = random.sample(list(DEVICES.keys()), num_mutations)
-        
-        for dev_id in target_ids:
-            dev = DEVICES[dev_id]
-            # Mutate state
-            new_status = not dev["status"]
-            dev["status"] = new_status
-            dev["power_draw"] = dev["nominal_power"] if new_status else 0
-            dev["last_changed"] = datetime.utcnow().isoformat() + "Z"
+        if SIMULATION_ACTIVE:
+            # Probabilistically toggle 1 or 2 random devices
+            num_mutations = random.randint(1, 2)
+            target_ids = random.sample(list(DEVICES.keys()), num_mutations)
             
-        check_all_alerts()
-        
-        # Broadcast state update to WebSocket clients
-        await manager.broadcast({
-            "type": "telemetry_update",
-            "devices": DEVICES,
-            "alerts": ALERTS,
-            "metrics": get_metrics()
-        })
+            for dev_id in target_ids:
+                dev = DEVICES[dev_id]
+                # Mutate state
+                new_status = not dev["status"]
+                dev["status"] = new_status
+                dev["power_draw"] = dev["nominal_power"] if new_status else 0
+                dev["last_changed"] = datetime.utcnow().isoformat() + "Z"
+                
+            check_all_alerts()
+            
+            # Broadcast state update to WebSocket clients
+            await manager.broadcast({
+                "type": "telemetry_update",
+                "devices": DEVICES,
+                "alerts": ALERTS,
+                "metrics": get_metrics()
+            })
 
 @app.on_event("startup")
 async def startup_event():
@@ -288,6 +291,23 @@ async def simulate_anomaly(room: str = "Work Room 2"):
         "metrics": get_metrics()
     })
     return {"message": f"Critical 3-hour continuous load anomaly simulated in {room}."}
+
+class SimulationModeRequest(BaseModel):
+    active: bool
+
+@app.post("/api/admin/simulation-mode")
+async def set_simulation_mode(payload: SimulationModeRequest):
+    global SIMULATION_ACTIVE
+    SIMULATION_ACTIVE = payload.active
+    
+    # Broadcast current state with updated mode info
+    await manager.broadcast({
+        "type": "telemetry_update",
+        "devices": DEVICES,
+        "alerts": ALERTS,
+        "metrics": get_metrics()
+    })
+    return {"message": f"Simulation mode set to {'Auto' if SIMULATION_ACTIVE else 'Manual'}", "active": SIMULATION_ACTIVE}
 
 # Real-Time Observation WebSocket Gateway
 @app.websocket("/ws/telemetry")

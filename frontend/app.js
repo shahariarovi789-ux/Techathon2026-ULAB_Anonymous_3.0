@@ -272,6 +272,26 @@ function renderDashboard(devices, alerts, metrics) {
   renderFloorplanOverlays(devices);
   renderRoomLists(devices);
   renderAlerts(alerts);
+
+  // Update Simulation Mode Switcher Buttons
+  const btnAuto = document.getElementById("btn-mode-auto");
+  const btnManual = document.getElementById("btn-mode-manual");
+  const indicatorAuto = document.getElementById("indicator-auto");
+  const indicatorManual = document.getElementById("indicator-manual");
+  
+  if (metrics.simulation_active) {
+    // Auto Mode active styling
+    btnAuto.className = "flex-grow py-2 px-3 rounded-lg text-xs font-bold transition duration-300 flex items-center justify-center gap-1.5 bg-blue-600/20 text-blue-400 border border-blue-500/20";
+    btnManual.className = "flex-grow py-2 px-3 rounded-lg text-xs font-bold transition duration-300 flex items-center justify-center gap-1.5 text-slate-400 hover:text-slate-200";
+    indicatorAuto.className = "h-2.5 w-2.5 rounded-full bg-blue-500 animate-pulse";
+    indicatorManual.className = "h-2.5 w-2.5 rounded-full bg-slate-600";
+  } else {
+    // Manual Mode active styling
+    btnAuto.className = "flex-grow py-2 px-3 rounded-lg text-xs font-bold transition duration-300 flex items-center justify-center gap-1.5 text-slate-400 hover:text-slate-200";
+    btnManual.className = "flex-grow py-2 px-3 rounded-lg text-xs font-bold transition duration-300 flex items-center justify-center gap-1.5 bg-emerald-600/20 text-emerald-400 border border-emerald-500/20";
+    indicatorAuto.className = "h-2.5 w-2.5 rounded-full bg-slate-600";
+    indicatorManual.className = "h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse";
+  }
 }
 
 // Setup Event Listeners
@@ -370,6 +390,40 @@ function setupEventListeners() {
       }
     } catch (err) {
       console.error("Failed to simulate anomaly:", err);
+    }
+  });
+
+  // Simulation Mode Controls
+  const btnModeAuto = document.getElementById("btn-mode-auto");
+  const btnModeManual = document.getElementById("btn-mode-manual");
+
+  btnModeAuto.addEventListener("click", async () => {
+    try {
+      const res = await fetch(`${BACKEND_REST}/api/admin/simulation-mode`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ active: true })
+      });
+      if (res.status === 200) {
+        console.log("Simulation set to AUTO mode.");
+      }
+    } catch (err) {
+      console.error("Failed to set simulation to auto:", err);
+    }
+  });
+
+  btnModeManual.addEventListener("click", async () => {
+    try {
+      const res = await fetch(`${BACKEND_REST}/api/admin/simulation-mode`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ active: false })
+      });
+      if (res.status === 200) {
+        console.log("Simulation set to MANUAL mode.");
+      }
+    } catch (err) {
+      console.error("Failed to set simulation to manual:", err);
     }
   });
 }

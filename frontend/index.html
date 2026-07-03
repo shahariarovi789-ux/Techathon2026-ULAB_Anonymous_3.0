@@ -146,6 +146,18 @@
       <div class="glass rounded-2xl p-6">
         <h2 class="text-sm font-bold tracking-wider text-slate-400 uppercase mb-4">Observation Controls</h2>
         
+        <!-- Mode Switcher -->
+        <div class="mb-5 bg-slate-900/40 p-1.5 rounded-xl border border-white/5 flex gap-1">
+          <button id="btn-mode-auto" class="flex-grow py-2 px-3 rounded-lg text-xs font-bold transition duration-300 flex items-center justify-center gap-1.5 bg-blue-600/20 text-blue-400 border border-blue-500/20">
+            <span id="indicator-auto" class="h-2.5 w-2.5 rounded-full bg-blue-500 animate-pulse"></span>
+            Auto Simulation
+          </button>
+          <button id="btn-mode-manual" class="flex-grow py-2 px-3 rounded-lg text-xs font-bold transition duration-300 flex items-center justify-center gap-1.5 text-slate-400 hover:text-slate-200">
+            <span id="indicator-manual" class="h-2.5 w-2.5 rounded-full bg-slate-600"></span>
+            Manual Control
+          </button>
+        </div>
+        
         <!-- Slider override time -->
         <div class="mb-5 bg-slate-900/40 p-4 rounded-xl border border-white/5">
           <div class="flex justify-between items-center mb-2">
