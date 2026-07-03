@@ -14,7 +14,12 @@
     { "type": "wokwi-relay-module", "id": "relay_fan2", "top": 240, "left": 140, "attrs": {} },
     { "type": "wokwi-potentiometer", "id": "pot_acs712", "top": 240, "left": 0, "attrs": { "label": "ACS712" } },
     { "type": "wokwi-dc-motor", "id": "fan_motor1", "top": 360, "left": -140, "attrs": {} },
-    { "type": "wokwi-dc-motor", "id": "fan_motor2", "top": 360, "left": 140, "attrs": {} }
+    { "type": "wokwi-dc-motor", "id": "fan_motor2", "top": 360, "left": 140, "attrs": {} },
+    { "type": "wokwi-pushbutton", "id": "btn_fan1", "top": -80, "left": -220, "attrs": { "label": "Fan 1 SW", "color": "blue" } },
+    { "type": "wokwi-pushbutton", "id": "btn_fan2", "top": -40, "left": -220, "attrs": { "label": "Fan 2 SW", "color": "blue" } },
+    { "type": "wokwi-pushbutton", "id": "btn_light1", "top": 0, "left": -220, "attrs": { "label": "Light 1 SW", "color": "yellow" } },
+    { "type": "wokwi-pushbutton", "id": "btn_light2", "top": 40, "left": -220, "attrs": { "label": "Light 2 SW", "color": "yellow" } },
+    { "type": "wokwi-pushbutton", "id": "btn_light3", "top": 80, "left": -220, "attrs": { "label": "Light 3 SW", "color": "yellow" } }
   ],
   "connections": [
     [ "esp:GND.1", "led_light1:C", "black", [] ],
@@ -25,6 +30,11 @@
     [ "esp:GND.1", "pot_acs712:GND", "black", [] ],
     [ "esp:GND.1", "fan_motor1:2", "black", [] ],
     [ "esp:GND.1", "fan_motor2:2", "black", [] ],
+    [ "esp:GND.1", "btn_fan1:2.1", "black", [] ],
+    [ "esp:GND.1", "btn_fan2:2.1", "black", [] ],
+    [ "esp:GND.1", "btn_light1:2.1", "black", [] ],
+    [ "esp:GND.1", "btn_light2:2.1", "black", [] ],
+    [ "esp:GND.1", "btn_light3:2.1", "black", [] ],
     [ "esp:3V3", "relay_fan1:VCC", "red", [] ],
     [ "esp:3V3", "relay_fan2:VCC", "red", [] ],
     [ "esp:3V3", "pot_acs712:VCC", "red", [] ],
@@ -40,7 +50,12 @@
     [ "esp:D18", "relay_fan2:IN", "blue", [] ],
     [ "esp:D34", "pot_acs712:SIG", "green", [] ],
     [ "relay_fan1:NO", "fan_motor1:1", "orange", [] ],
-    [ "relay_fan2:NO", "fan_motor2:1", "orange", [] ]
+    [ "relay_fan2:NO", "fan_motor2:1", "orange", [] ],
+    [ "esp:D12", "btn_fan1:1.1", "blue", [] ],
+    [ "esp:D13", "btn_fan2:1.1", "blue", [] ],
+    [ "esp:D14", "btn_light1:1.1", "yellow", [] ],
+    [ "esp:D25", "btn_light2:1.1", "yellow", [] ],
+    [ "esp:D26", "btn_light3:1.1", "yellow", [] ]
   ],
   "dependencies": {}
 }
