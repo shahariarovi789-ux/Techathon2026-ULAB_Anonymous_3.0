@@ -9,6 +9,7 @@ from typing import Dict, List, Optional
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 app = FastAPI(title="Lumina: Enterprise IoT Workspace Orchestrator API")
@@ -510,6 +511,9 @@ async def download_history(start_date: Optional[str] = None, end_date: Optional[
         'Content-Disposition': 'attachment; filename="lumina_power_usage_report.csv"'
     }
     return StreamingResponse(iter([output.getvalue()]), media_type="text/csv", headers=headers)
+
+# Serve static files for the frontend dashboard
+app.mount("/", StaticFiles(directory="frontend", html=True), name="static")
 
 if __name__ == "__main__":
     import uvicorn
