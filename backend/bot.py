@@ -1,4 +1,5 @@
 import os
+import json
 import asyncio
 import aiohttp
 import discord
@@ -139,8 +140,8 @@ Friendly Response:"""
 @bot.event
 async def on_ready():
     print(f"🤖 Discord Bot connected as {bot.user.name} ({bot.user.id})")
-    # Start the proactive anomaly checker loop
-    bot.loop.create_task(proactive_alert_loop())
+    # Start the live WebSocket alert listener
+    bot.loop.create_task(websocket_alert_listener())
 
 @bot.command(name="status")
 async def status_command(ctx):
@@ -247,9 +248,9 @@ async def usage_command(ctx):
         except Exception as e:
             await ctx.send(f"⚠️ Error communicating with backend: {e}")
 
-# Proactive alert monitoring loop
-async def proactive_alert_loop():
-    """Background task to poll API for active alerts and dispatch channel webhooks/messages."""
+# Live WebSocket alert listener
+async def websocket_alert_listener():
+    """Listens to the backend WebSocket gateway and dispatches alerts instantly (sub-second latency)."""
     global notified_alerts
     await bot.wait_until_ready()
     
@@ -261,44 +262,45 @@ async def proactive_alert_loop():
         except Exception as e:
             print(f"[Discord Bot Warning] Could not resolve channel ID {CHANNEL_ID}: {e}")
             
-    print(f"📢 Proactive Anomaly Detector started. Listening to alerts on backend...")
+    ws_url = BACKEND_URL.replace("http://", "ws://") + "/ws/telemetry"
+    print(f"🔌 WebSocket Alert Listener connecting to {ws_url}...")
     
     while not bot.is_closed():
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get(f"{BACKEND_URL}/api/alerts") as response:
-                    if response.status == 200:
-                        alerts = await response.json()
-                        current_alert_ids = set()
-                        
-                        for alert in alerts:
-                            alert_id = alert["id"]
-                            current_alert_ids.add(alert_id)
+                async with session.ws_connect(ws_url) as ws:
+                    print("🔌 WebSocket Alert Listener Connected & Live!")
+                    async for msg in ws:
+                        if msg.type == aiohttp.WSMsgType.TEXT:
+                            data = json.loads(msg.data)
+                            alerts = data.get("alerts", [])
+                            current_alert_ids = set()
                             
-                            # If alert is new, dispatch message
-                            if alert_id not in notified_alerts:
-                                title = alert["title"]
-                                desc = alert["description"]
-                                severity = alert["severity"]
+                            for alert in alerts:
+                                alert_id = alert["id"]
+                                current_alert_ids.add(alert_id)
                                 
-                                # Generate conversational warning message via local LLM / template fallback
-                                friendly_alert = await generate_conversational_response(f"Alert: {title}. Details: {desc}", "alert")
-                                
-                                # Send to channel if configured
-                                if target_channel:
-                                    await target_channel.send(friendly_alert)
-                                    print(f"[Discord Bot Alert Sent] {friendly_alert}")
-                                else:
-                                    print(f"[Console Only Alert - Channel ID Not Configured] {friendly_alert}")
+                                # If alert is new, dispatch message instantly
+                                if alert_id not in notified_alerts:
+                                    title = alert["title"]
+                                    desc = alert["description"]
                                     
-                                notified_alerts.add(alert_id)
-                        
-                        # Clean up resolved alerts
-                        notified_alerts = notified_alerts.intersection(current_alert_ids)
+                                    # Generate conversational warning message via local LLM / template fallback
+                                    friendly_alert = await generate_conversational_response(f"Alert: {title}. Details: {desc}", "alert")
+                                    
+                                    if target_channel:
+                                        await target_channel.send(friendly_alert)
+                                        print(f"[WebSocket Alert Sent] {friendly_alert}")
+                                    else:
+                                        print(f"[Console Only Alert - Channel ID Not Configured] {friendly_alert}")
+                                        
+                                    notified_alerts.add(alert_id)
+                            
+                            # Clean up resolved alerts
+                            notified_alerts = notified_alerts.intersection(current_alert_ids)
         except Exception as e:
-            print(f"[Proactive Loop Warning] Error checking alerts on backend: {e}")
-            
-        await asyncio.sleep(30)
+            print(f"[WebSocket Loop Warning] Connection lost or failed: {e}. Reconnecting in 5 seconds...")
+            await asyncio.sleep(5)
 
 def main():
     if not TOKEN:
