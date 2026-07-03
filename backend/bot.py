@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import asyncio
 import aiohttp
@@ -115,13 +116,17 @@ Friendly Response:"""
             
         # Parse simulated hour
         hour_str = "late"
-        for h in range(24):
-            if f"({h:02d}:00)" in raw_summary or f" {h:02d}:00" in raw_summary:
-                if h >= 12:
-                    hour_str = f"{h-12 if h > 12 else 12} PM"
-                else:
-                    hour_str = f"{h if h > 0 else 12} AM"
-                break
+        time_match = re.search(r"Simulated Time:\s*([0-9a-zA-Z:\s]+)\b", raw_summary)
+        if time_match:
+            hour_str = time_match.group(1).strip()
+        else:
+            for h in range(24):
+                if f"({h:02d}:00)" in raw_summary or f" {h:02d}:00" in raw_summary:
+                    if h >= 12:
+                        hour_str = f"{h-12 if h > 12 else 12} PM"
+                    else:
+                        hour_str = f"{h if h > 0 else 12} AM"
+                    break
                 
         import random
         
@@ -284,9 +289,12 @@ async def websocket_alert_listener():
                                 if alert_id not in notified_alerts:
                                     title = alert["title"]
                                     desc = alert["description"]
+                                    sim_time = alert.get("simulation_time", "late")
                                     
                                     # Generate conversational warning message via local LLM / template fallback
-                                    friendly_alert = await generate_conversational_response(f"Alert: {title}. Details: {desc}", "alert")
+                                    # Pass simulation time inside raw_summary for prompt matching
+                                    raw_sum = f"Alert: {title}. Details: {desc}. Simulated Time: {sim_time}."
+                                    friendly_alert = await generate_conversational_response(raw_sum, "alert")
                                     
                                     if target_channel:
                                         await target_channel.send(friendly_alert)

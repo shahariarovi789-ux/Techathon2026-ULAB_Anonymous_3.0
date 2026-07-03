@@ -30,6 +30,17 @@ SERVER_START_TIME = datetime.utcnow()
 
 DATABASE_PATH = "lumina_history.db"
 
+def get_virtual_time_string() -> str:
+    current_time = datetime.now()
+    if VIRTUAL_HOUR_OVERRIDE is not None:
+        h = VIRTUAL_HOUR_OVERRIDE
+        suffix = "PM" if h >= 12 else "AM"
+        display_h = h - 12 if h > 12 else (12 if h == 0 else h)
+        return f"{display_h:02d}:00 {suffix}"
+    else:
+        # Use localized 12-hour format with minutes, e.g. "08:12 PM"
+        return current_time.strftime("%I:%M %p")
+
 def init_db():
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
@@ -165,13 +176,16 @@ def get_metrics() -> dict:
         "room_breakdown": room_breakdown,
         "estimated_daily_kwh": round(estimated_kwh, 3),
         "uptime_seconds": int((datetime.utcnow() - SERVER_START_TIME).total_seconds()),
-        "simulation_active": SIMULATION_ACTIVE
+        "simulation_active": SIMULATION_ACTIVE,
+        "virtual_time": get_virtual_time_string()
     }
 
 # Anomaly Alerts Checker
 def check_all_alerts():
     global ALERTS
     ALERTS = []
+    
+    current_sim_time = get_virtual_time_string()
     
     # 1. After-hours warning (09:00 - 17:00 operational hours)
     current_time = datetime.now()
@@ -194,9 +208,10 @@ def check_all_alerts():
                     "id": f"after_hours_{room.replace(' ', '_').lower()}",
                     "type": "after_hours",
                     "title": f"After-Hours Alert ({room})",
-                    "description": f"{len(names)} devices left ON during non-operational hours ({hour:02d}:00). Active: {', '.join(names)}",
+                    "description": f"{len(names)} devices left ON during non-operational hours ({current_sim_time}). Active: {', '.join(names)}",
                     "timestamp": datetime.utcnow().isoformat() + "Z",
-                    "severity": "warning"
+                    "severity": "warning",
+                    "simulation_time": current_sim_time
                 })
 
     # 2. Continuous active load warning (> 2 hours continuous run for all devices in a room)
@@ -223,9 +238,10 @@ def check_all_alerts():
                         "id": f"continuous_{room.replace(' ', '_').lower()}",
                         "type": "continuous_on",
                         "title": f"Critical Load Alert ({room})",
-                        "description": f"All devices in {room} have been ON continuously for {hours} hours. High probability of neglected space.",
+                        "description": f"All devices in {room} have been ON continuously for {hours} hours (detected at {current_sim_time}). High probability of neglected space.",
                         "timestamp": datetime.utcnow().isoformat() + "Z",
-                        "severity": "critical"
+                        "severity": "critical",
+                        "simulation_time": current_sim_time
                     })
             except Exception as e:
                 print(f"Alert check failure: {e}")
