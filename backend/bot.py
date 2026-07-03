@@ -260,6 +260,27 @@ async def usage_command(ctx):
         except Exception as e:
             await ctx.send(f"⚠️ Error communicating with backend: {e}")
 
+@bot.command(name="shutdown")
+@commands.has_permissions(administrator=True)
+async def shutdown_command(ctx):
+    """Admin-only: Instantly turn off all office devices (fans and lights)."""
+    print("Received admin shutdown command")
+    async with ctx.typing():
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(f"{BACKEND_URL}/api/admin/shutdown") as response:
+                    if response.status == 200:
+                        await ctx.send("🚨 **System Override Active**: All office utilities (fans and lights) have been turned off by administrator command.")
+                    else:
+                        await ctx.send("❌ Failed to execute bulk override shutdown on the backend.")
+        except Exception as e:
+            await ctx.send(f"⚠️ Error communicating with backend: {e}")
+
+@shutdown_command.error
+async def shutdown_error(ctx, error):
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.send("❌ **Access Denied**: You do not have the required permissions to execute this command. (Requires: `Administrator`)")
+
 # Live WebSocket alert listener
 async def websocket_alert_listener():
     """Listens to the backend WebSocket gateway and dispatches alerts instantly (sub-second latency)."""

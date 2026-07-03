@@ -422,6 +422,22 @@ async def set_simulation_mode(payload: SimulationModeRequest):
     })
     return {"message": f"Simulation mode set to {'Auto' if SIMULATION_ACTIVE else 'Manual'}", "active": SIMULATION_ACTIVE}
 
+@app.post("/api/admin/shutdown")
+async def shutdown_all_devices():
+    for dev_id, dev in DEVICES.items():
+        dev["status"] = False
+        dev["power_draw"] = 0
+        dev["last_changed"] = datetime.utcnow().isoformat() + "Z"
+        
+    check_all_alerts()
+    await manager.broadcast({
+        "type": "telemetry_update",
+        "devices": DEVICES,
+        "alerts": ALERTS,
+        "metrics": get_metrics()
+    })
+    return {"message": "All office utilities have been shut down successfully.", "devices": DEVICES}
+
 # Real-Time Observation WebSocket Gateway
 @app.websocket("/ws/telemetry")
 async def websocket_endpoint(websocket: WebSocket):
