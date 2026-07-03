@@ -132,3 +132,131 @@ h1, h2, h3, h4 {
   user-select: none;
   -webkit-user-drag: none;
 }
+
+/* Ambient Neon Glow Circles */
+body {
+  position: relative;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: -10%;
+  left: -10%;
+  width: 40vw;
+  height: 40vw;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, rgba(99, 102, 241, 0) 70%);
+  border-radius: 50%;
+  z-index: -1;
+  pointer-events: none;
+  filter: blur(80px);
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  bottom: -10%;
+  right: -10%;
+  width: 40vw;
+  height: 40vw;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.06) 0%, rgba(16, 185, 129, 0) 70%);
+  border-radius: 50%;
+  z-index: -1;
+  pointer-events: none;
+  filter: blur(80px);
+}
+
+/* Active Indicator Glowing Halos */
+.light-glow::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70px;
+  height: 70px;
+  background: radial-gradient(circle, rgba(234, 179, 8, 0.22) 0%, rgba(234, 179, 8, 0) 70%);
+  border-radius: 50%;
+  z-index: -1;
+  pointer-events: none;
+  animation: pulse-glow-kf 2s ease-in-out infinite alternate;
+}
+
+.fan-spin::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 65px;
+  height: 65px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.18) 0%, rgba(59, 130, 246, 0) 70%);
+  border-radius: 50%;
+  z-index: -1;
+  pointer-events: none;
+  animation: pulse-glow-kf 2s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes pulse-glow-kf {
+  0% { transform: translate(-50%, -50%) scale(0.92); opacity: 0.7; }
+  100% { transform: translate(-50%, -50%) scale(1.18); opacity: 1; }
+}
+
+/* Interactive Control Hover Effects */
+button {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+button:hover {
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.25);
+}
+
+/* Dark Theme Flatpickr Styles */
+.flatpickr-calendar {
+  background: rgba(15, 23, 42, 0.95) !important;
+  backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6) !important;
+  border-radius: 12px !important;
+}
+
+.flatpickr-months .flatpickr-month {
+  color: #f8fafc !important;
+}
+
+.flatpickr-current-month .numInputWrapper span.arrowUp::after {
+  border-bottom-color: #f8fafc !important;
+}
+
+.flatpickr-current-month .numInputWrapper span.arrowDown::after {
+  border-top-color: #f8fafc !important;
+}
+
+.flatpickr-day.selected, 
+.flatpickr-day.selected:hover, 
+.flatpickr-day.selected:focus {
+  background: #4f46e5 !important;
+  border-color: #4f46e5 !important;
+  color: #fff !important;
+}
+
+.flatpickr-day:hover, 
+.flatpickr-day:focus {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #fff !important;
+}
+
+.flatpickr-day {
+  color: #94a3b8 !important;
+}
+
+.flatpickr-day.flatpickr-disabled, 
+.flatpickr-day.flatpickr-disabled:hover {
+  color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.flatpickr-weekday {
+  color: #64748b !important;
+}
