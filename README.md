@@ -56,52 +56,81 @@ To prevent discrepancies, the system employs a **Unified Single Source of Truth*
 
 ## 4. Setup & Running Instructions
 
-### Prerequisites
-1. **Python 3.11+** installed.
-2. **Ollama** installed and running on your system with the model `qwen2.5-coder:3b` pulled:
+### Prerequisites (All Platforms)
+1. **Python 3.11+** installed (Verify with `python --version` or `python3 --version`).
+2. **Ollama** installed and active. Pull the Qwen model locally:
    ```bash
    ollama run qwen2.5-coder:3b
    ```
 
-### Quick Start (One-Command Setup)
-To setup the environment, install python libraries, and boot both the FastAPI backend and the Discord bot concurrently, run the launcher script from the project root:
+---
 
+### 💻 macOS & Linux Setup Guide
+
+#### **Method A: Quick Start (One-Command Launcher)**
+Initialize the virtual environment, install libraries, load environment files, and start the servers concurrently:
 ```bash
-# Set up executable permissions
+# 1. Give executable permissions to the shell script
 chmod +x start.sh
 
-# Run the launcher
+# 2. Run the launcher
 ./start.sh
 ```
 
-### Manual Step-by-Step Launch
-
+#### **Method B: Manual Step-by-Step Launch**
 1. **Virtual Environment & Dependencies**:
    ```bash
-   cd backend
    python3 -m venv venv
    source venv/bin/activate
-   pip install -r requirements.txt
+   pip install -r backend/requirements.txt
    ```
-
-2. **Configuration**:
-   Copy `.env.example` to `.env` and fill in your Discord details:
+2. **Environment Configuration**:
    ```bash
-   cp .env.example .env
-   # Add your DISCORD_BOT_TOKEN and DISCORD_CHANNEL_ID in .env
+   cp backend/.env.example backend/.env
+   # Open backend/.env and populate DISCORD_BOT_TOKEN and DISCORD_CHANNEL_ID
    ```
+3. **Run Services (in separate terminal tabs)**:
+   - **Start Backend API**: `python3 backend/main.py` (Runs at `http://localhost:8000`)
+   - **Start Discord Bot**: `python3 backend/bot.py`
 
-3. **Start the API Backend**:
-   ```bash
-   python3 main.py
-   ```
-   *The server runs locally at `http://localhost:8000`. The frontend can be viewed by opening `frontend/index.html` in any modern web browser.*
+---
 
-4. **Start the Discord Bot**:
-   In a separate terminal (with virtual environment activated):
-   ```bash
-   python3 bot.py
+### 🪟 Windows Setup Guide (Command Prompt / PowerShell)
+
+#### **Method A: Quick Start (One-Click Launcher)**
+1. Copy `backend/.env.example` to `backend/.env` and configure your Discord details.
+2. Double-click the **`start.bat`** file in the project root folder. It will configure the virtual environment and launch both the backend API and Discord Bot in separate labeled Command Prompt windows automatically!
+
+#### **Method B: Manual Step-by-Step Launch**
+1. **Virtual Environment & Dependencies**:
+   Open Command Prompt (`cmd`) or PowerShell in the project root:
+   ```cmd
+   python -m venv venv
+   call venv\Scripts\activate
+   pip install -r backend/requirements.txt
    ```
+2. **Environment Configuration**:
+   ```cmd
+   copy backend\.env.example backend\.env
+   :: Open backend\.env and configure DISCORD_BOT_TOKEN and DISCORD_CHANNEL_ID
+   ```
+3. **Run Services (in separate terminal windows)**:
+   - **Start Backend API**: 
+     ```cmd
+     call venv\Scripts\activate
+     python backend/main.py
+     ```
+   - **Start Discord Bot**: 
+     ```cmd
+     call venv\Scripts\activate
+     python backend/bot.py
+     ```
+
+---
+
+### 🌐 Viewing the Live Dashboard
+Once the backend is running, open your web browser and navigate directly to:
+👉 **`http://localhost:8000`** (or open `frontend/index.html` locally).
 
 ---
 
