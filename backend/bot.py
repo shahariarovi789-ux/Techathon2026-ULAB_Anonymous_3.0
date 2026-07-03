@@ -53,19 +53,18 @@ async def generate_conversational_response(raw_summary: str, context_type: str) 
     """Wrapper that tries to generate an LLM response, falling back to a structured template."""
     if context_type == "alert":
         prompt = f"""
-You are Lumina, a friendly and helpful office assistant.
-You noticed an anomaly/alert in the workspace.
-Your task is to write a warm, friendly, and informal warning nudge to the office members in our Discord channel.
-Avoid robotic system logs, technical terms, or severity labels. Keep it natural, warm, and helpful.
-End with a gentle question asking if someone forgot to leave or turn off the devices.
+You are Lumina, the AI energy guardian for our office.
+Your task is to write a highly creative, warm, and conversational alert message to the office members in our Discord channel.
+Avoid boring, repetitive templates. Be spontaneous, fun, yet clear!
+Vary your tone—sometimes use light humor, sometimes a friendly eco-warning, and sometimes a late-night check-in.
 
-Registered staff members (use them naturally if appropriate):
+You should occasionally mention who might be responsible using the registered team staff:
 - Nafisa Rahman (Email: nafisa.rahman@yahoo.com, Phone: +8801812345678)
 - Tanvir Hossain (Email: tanvir.hossain@yahoo.com, Phone: +8801912345678)
 
 Alert Details: {raw_summary}
 
-Example: "⚠️ Hey! Work Room 2 still has 2 fans and 3 lights ON and it's 10 PM. Did someone forget to leave?"
+Write a unique, friendly alert notification. Do NOT copy the standard example verbatim; invent something fresh, fun, and organic.
 
 Friendly Alert Message:"""
     else:
@@ -116,7 +115,7 @@ Friendly Response:"""
             lights_count = "1 light"
             
         # Parse simulated hour
-        hour_str = "after hours"
+        hour_str = "late"
         for h in range(24):
             if f"({h:02d}:00)" in raw_summary or f" {h:02d}:00" in raw_summary:
                 if h >= 12:
@@ -125,8 +124,19 @@ Friendly Response:"""
                     hour_str = f"{h if h > 0 else 12} AM"
                 break
                 
-        emoji = "⚠️" if "after_hours" in raw_summary.lower() or "warning" in raw_summary.lower() else "🚨"
-        return f"{emoji} Hey! {room} still has {fans_count} and {lights_count} ON and it's {hour_str}. Did someone forget to leave?"
+        import random
+        user1 = DUMMY_USERS[0]["name"]
+        user2 = DUMMY_USERS[1]["name"]
+        
+        # Array of creative warnings
+        templates = [
+            f"⚡ **Energy Guardian Alert** | Hey team! It's {hour_str} and the {room} still has {fans_count} and {lights_count} running. Did someone forget to switch them off?",
+            f"🕵️‍♂️ **Late Night Check** | Looks like the lights are still burning in {room}! We have {fans_count} and {lights_count} active at {hour_str}. {user1}, is that you wrapping up late?",
+            f"🍃 **Eco-Nudge** | Let's save some green squares! {room} is currently empty but has {fans_count} and {lights_count} left ON at {hour_str}. Could someone nearby toggle them off?",
+            f"💤 **Sleep Mode Check** | The office has gone quiet, but {room} is still drawing power! {fans_count} and {lights_count} are active at {hour_str}. {user2}, did you leave your desk running?",
+            f"🚨 **Quick Reminder** | Non-operational hours are here, but the {room} is still humming ({fans_count} and {lights_count} ON at {hour_str}). Please turn them off if you're heading home!"
+        ]
+        return random.choice(templates)
     return f"Here is the latest update: {raw_summary}"
 
 # Bot commands
