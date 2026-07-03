@@ -12,7 +12,9 @@
     { "type": "wokwi-resistor", "id": "r3", "top": -90, "left": 95, "attrs": { "value": "330" } },
     { "type": "wokwi-relay-module", "id": "relay_fan1", "top": 240, "left": -140, "attrs": {} },
     { "type": "wokwi-relay-module", "id": "relay_fan2", "top": 240, "left": 140, "attrs": {} },
-    { "type": "wokwi-potentiometer", "id": "pot_acs712", "top": 240, "left": 0, "attrs": { "label": "ACS712" } }
+    { "type": "wokwi-potentiometer", "id": "pot_acs712", "top": 240, "left": 0, "attrs": { "label": "ACS712" } },
+    { "type": "wokwi-dc-motor", "id": "fan_motor1", "top": 360, "left": -140, "attrs": {} },
+    { "type": "wokwi-dc-motor", "id": "fan_motor2", "top": 360, "left": 140, "attrs": {} }
   ],
   "connections": [
     [ "esp:GND.1", "led_light1:C", "black", [] ],
@@ -21,9 +23,13 @@
     [ "esp:GND.1", "relay_fan1:GND", "black", [] ],
     [ "esp:GND.1", "relay_fan2:GND", "black", [] ],
     [ "esp:GND.1", "pot_acs712:GND", "black", [] ],
+    [ "esp:GND.1", "fan_motor1:2", "black", [] ],
+    [ "esp:GND.1", "fan_motor2:2", "black", [] ],
     [ "esp:3V3", "relay_fan1:VCC", "red", [] ],
     [ "esp:3V3", "relay_fan2:VCC", "red", [] ],
     [ "esp:3V3", "pot_acs712:VCC", "red", [] ],
+    [ "esp:5V", "relay_fan1:COM", "red", [] ],
+    [ "esp:5V", "relay_fan2:COM", "red", [] ],
     [ "led_light1:A", "r1:1", "yellow", [] ],
     [ "led_light2:A", "r2:1", "yellow", [] ],
     [ "led_light3:A", "r3:1", "yellow", [] ],
@@ -32,7 +38,9 @@
     [ "esp:D22", "r3:2", "orange", [] ],
     [ "esp:D5", "relay_fan1:IN", "blue", [] ],
     [ "esp:D18", "relay_fan2:IN", "blue", [] ],
-    [ "esp:D34", "pot_acs712:SIG", "green", [] ]
+    [ "esp:D34", "pot_acs712:SIG", "green", [] ],
+    [ "relay_fan1:NO", "fan_motor1:1", "orange", [] ],
+    [ "relay_fan2:NO", "fan_motor2:1", "orange", [] ]
   ],
   "dependencies": {}
 }
