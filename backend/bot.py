@@ -73,9 +73,7 @@ You are Lumina, a helpful and friendly Enterprise IoT assistant for our office.
 Your task is to translate the raw status summary below into a warm, natural, and human-readable operational message.
 Avoid raw data dumps or robotic bullet lists. Write 2-3 friendly sentences.
 
-You should occasionally mention who might be responsible using the registered team staff:
-- Nafisa Rahman (Email: nafisa.rahman@yahoo.com, Phone: +8801812345678)
-- Tanvir Hossain (Email: tanvir.hossain@yahoo.com, Phone: +8801912345678)
+CRITICAL CONSTRAINT: Do NOT mention any individual staff member names or employee names (like Nafisa, Tanvir, etc.) in the message. The message must be completely anonymous.
 
 Context type: {context_type}
 Raw status summary: {raw_summary}
@@ -87,16 +85,15 @@ Friendly Response:"""
         return llm_response
     
     # Fallback template if Ollama is not active
-    user_mention = DUMMY_USERS[0]["name"] if "Drawing" in raw_summary else DUMMY_USERS[1]["name"]
-    
     if context_type == "status":
-        return (f"Hi there! Here's what's currently running: {raw_summary}. "
-                f"It looks like {user_mention} might still be wrapping up some tasks in those active zones.")
+        if "on" not in raw_summary.lower():
+            return "Hi there! All devices in the office are currently powered down. The workspace is completely dark and secure."
+        else:
+            return f"Hi there! Here's what's currently running: {raw_summary}. Please ensure everything is switched off when leaving the workspace."
     elif context_type == "room":
         return f"Sure thing! For that room, here is the current update: {raw_summary}. Let me know if you need help toggling anything!"
     elif context_type == "usage":
-        return (f"Here is our current power draw report: {raw_summary}. "
-                f"We are keeping an eye on it. Let's make sure Nafisa and Tanvir know to turn off devices when leaving!")
+        return f"Here is our current power draw report: {raw_summary}. We are keeping an eye on it. Let's make sure we toggle off unused devices to save energy!"
     elif context_type == "alert":
         room = "Work Room 2"
         if "Drawing" in raw_summary:
