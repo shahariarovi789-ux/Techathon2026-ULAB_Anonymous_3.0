@@ -659,6 +659,109 @@ function setupEventListeners() {
       window.location.href = url;
     });
   }
+
+  // Download PDF click
+  const btnDownloadPdf = document.getElementById("btn-download-pdf");
+  if (btnDownloadPdf) {
+    btnDownloadPdf.addEventListener("click", async () => {
+      if (!powerChart) {
+        alert("Please load the Power Analytics graph first!");
+        return;
+      }
+      
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF('p', 'mm', 'a4');
+      
+      // Title
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(18);
+      doc.setTextColor(15, 23, 42);
+      doc.text("Lumina Workspace Energy Observability Report", 14, 20);
+      
+      // Metadata
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(100, 116, 139);
+      doc.text(`Generated: ${new Date().toLocaleString()} | Team: ULAB_Anonymous_3.0`, 14, 27);
+      doc.line(14, 30, 196, 30);
+      
+      // Custom Chart Image
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.setTextColor(15, 23, 42);
+      doc.text("Power Consumption Trend Graph", 14, 38);
+      
+      const chartImage = powerChart.toBase64Image();
+      doc.addImage(chartImage, 'PNG', 14, 42, 182, 90);
+      
+      // Data Summary Table
+      doc.setFont("helvetica", "bold");
+      doc.text("Detailed Log Summary (Recent Records)", 14, 142);
+      
+      const startDateInput = document.getElementById("start-date").value;
+      const endDateInput = document.getElementById("end-date").value;
+      
+      let url = `${BACKEND_REST}/api/history`;
+      const params = [];
+      if (startDateInput) {
+        params.push(`start_date=${new Date(startDateInput).toISOString()}`);
+      }
+      if (endDateInput) {
+        const d = new Date(endDateInput);
+        d.setHours(23, 59, 59, 999);
+        params.push(`end_date=${d.toISOString()}`);
+      }
+      if (params.length > 0) {
+        url += "?" + params.join("&");
+      }
+      
+      try {
+        const res = await fetch(url);
+        if (res.status === 200) {
+          const historyData = await res.json();
+          
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(9);
+          doc.setTextColor(51, 65, 85);
+          
+          doc.text("Timestamp (Local)", 14, 150);
+          doc.text("Total Load", 75, 150);
+          doc.text("Drawing Room", 105, 150);
+          doc.text("Work Room 1", 135, 150);
+          doc.text("Work Room 2", 165, 150);
+          doc.line(14, 152, 196, 152);
+          
+          doc.setFont("helvetica", "normal");
+          let y = 158;
+          // Display the 12 most recent records
+          const displayRows = historyData.slice(-12);
+          
+          displayRows.forEach(row => {
+            const dateStr = new Date(row.timestamp).toLocaleString([], {
+              month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+            doc.text(dateStr, 14, y);
+            doc.text(`${row.total_watts}W`, 75, y);
+            doc.text(`${row.drawing_room.toFixed(1)}W`, 105, y);
+            doc.text(`${row.work_room_1.toFixed(1)}W`, 135, y);
+            doc.text(`${row.work_room_2.toFixed(1)}W`, 165, y);
+            y += 8;
+          });
+          
+          doc.line(14, y - 5, 196, y - 5);
+          doc.setFontSize(8);
+          doc.setTextColor(148, 163, 184);
+          doc.text("Confidential energy report generated automatically by Lumina IoT Orchestrator.", 14, 275);
+          doc.text("Page 1 of 1", 180, 275);
+          
+          doc.save("lumina_energy_detailed_report.pdf");
+        }
+      } catch (err) {
+        console.error("Failed to compile PDF report:", err);
+        alert("Failed to compile PDF report: " + err.message);
+      }
+    });
+  }
 }
 
 // Entry Point
