@@ -50,11 +50,21 @@ To prevent discrepancies, the system employs a **Unified Single Source of Truth*
 - **Frontend Dashboard**: Vanilla HTML5, CSS Custom Animations, Tailwind CSS, Native WebSockets.
 - **Discord Bot**: `discord.py`, `aiohttp` for async queries.
 - **Local AI Engine**: Ollama running a 4-bit quantized `qwen2.5-coder:3b` model (offline, private inference).
-- **Hardware Integration**: ESP32 NodeMCU, LEDs, Relays, and the ACS712 Current Sensor.
+- **Hardware Integration**: Arduino Uno, LEDs, Relays, and Servos.
 
 ---
 
-## 4. Setup & Running Instructions
+## 4. Hardware Circuit Schematic
+
+Below is the representative circuit schematic showing how the devices (3 Lights and 2 Fans) are wired to the Arduino Uno microcontroller for a single office zone (Drawing Room):
+
+![Lumina Arduino Uno Schematic](hardware/schematic.png)
+
+*(The raw configuration is saved in [hardware/diagram.json](file:///Users/a/code/Techathon2026-ULAB_Anonymous_3.0/hardware/diagram.json) and the firmware sketch is in [hardware/sketch.ino](file:///Users/a/code/Techathon2026-ULAB_Anonymous_3.0/hardware/sketch.ino))*
+
+---
+
+## 5. Setup & Running Instructions
 
 ### Prerequisites (All Platforms)
 1. **Python 3.11+** installed (Verify with `python --version` or `python3 --version`).
@@ -134,7 +144,7 @@ Once the backend is running, open your web browser and navigate directly to:
 
 ---
 
-## 5. API Endpoint Documentation
+## 6. API Endpoint Documentation
 
 | Method | Endpoint | Description |
 |---|---|---|
@@ -148,7 +158,7 @@ Once the backend is running, open your web browser and navigate directly to:
 
 ---
 
-## 6. AI Integration & Anonymized Reports
+## 7. AI Integration & Anonymized Reports
 - **Local LLM**: Utilizes `qwen2.5-coder:3b` (Quantized Q4_K_M) via Ollama.
 - **Anonymization & Constraints**: The prompt engineering parameters strictly enforce anonymity rules. The AI translates raw JSON logs into conversational alerts while completely avoiding employee names (such as Nafisa or Tanvir) or administrative roles to prevent security leakage.
 - **Proactive Warnings**: A background listener queries `/api/alerts` periodically. If a warning (after-hours usage) or critical alert (extreme off-hours load) is active, the bot generates a friendly, high-urgency message block containing warning indicators (e.g. 🚨, 🔥) and posts it to the configured channel.
@@ -156,7 +166,7 @@ Once the backend is running, open your web browser and navigate directly to:
 
 ---
 
-## 7. Discord Commands & Administrative Security
+## 8. Discord Commands & Administrative Security
 
 The Discord Bot client responds to prefix commands (`!`) and supports secure administrative commands:
 
@@ -167,7 +177,7 @@ The Discord Bot client responds to prefix commands (`!`) and supports secure adm
 
 ---
 
-## 8. Setup & Using the Discord Bot (Step-by-Step Guide)
+## 9. Setup & Using the Discord Bot (Step-by-Step Guide)
 
 > [!IMPORTANT]
 > **🚀 Instant Demo Setup (Skip Discord Developer Portal)**
@@ -214,7 +224,7 @@ Once the bot is started (via `start.bat` or `start.sh`):
 
 ---
 
-## 9. Hackathon Project Metadata
+## 10. Hackathon Project Metadata
 - **Team Name**: `ULAB_Anonymous_3.0`
 - **Team Lead**: `Only Ovi`
 - **Institution**: University of Liberal Arts Bangladesh (ULAB)
