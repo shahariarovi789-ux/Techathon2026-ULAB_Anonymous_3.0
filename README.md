@@ -12,31 +12,11 @@ In many office spaces, electrical appliances (lights, fans) are frequently left 
 
 ---
 
-## 2. Architecture & Data Flow (ASCII Diagram)
+## 2. Architecture & Data Flow
 
 To prevent discrepancies, the system employs a **Unified Single Source of Truth** architecture:
 
-```
-                  +-----------------------------------+
-                  |      Simulated Device Layer       |
-                  |  (Asynchronous Python Mutator)    |
-                  +-----------------------------------+
-                                    │
-                                    ▼ (Internal State Dict)
-                  +-----------------------------------+
-                  |         FastAPI Backend           |
-                  |  - Centralized State Manager      |
-                  |  - REST HTTP & WebSocket Servers   |
-                  +-----------------------------------+
-                       /                         \
-                      / (WebSockets)              \ (HTTP API Polling)
-                     ▼                             ▼
-       +--------------------------+    +--------------------------+
-       |   Real-Time Dashboard    |    |  Conversational Bot      |
-       |  - React/HTML5 Canvas    |    |  - discord.py Client     |
-       |  - Interactive SVG Map   |    |  - Local Qwen-3B LLM     |
-       +--------------------------+    +--------------------------+
-```
+![Lumina System Architecture](assets/architecture.png)
 
 ### Architectural Highlights
 - **Sub-Second Latency**: State changes in the backend are immediately propagated to the web client using WebSockets, avoiding client-side polling.
