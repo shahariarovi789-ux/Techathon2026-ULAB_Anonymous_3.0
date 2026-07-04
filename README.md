@@ -169,7 +169,19 @@ The Discord Bot client responds to prefix commands (`!`) and supports secure adm
 
 ## 8. Setup & Using the Discord Bot (Step-by-Step Guide)
 
-To configure, connect, and interact with the Lumina Discord agent, follow these steps:
+> [!IMPORTANT]
+> **🚀 Instant Demo Setup (Skip Discord Developer Portal)**
+> To make it as easy as possible for judges to evaluate the project, we have pre-configured a **Lumina Demonstration Bot**. You do not need to register a bot or copy any tokens!
+> 
+> **How to test it in 3 steps:**
+> 1. Click this link to invite our pre-configured bot to your server:
+>    👉 **[Click Here to Invite the Lumina Demo Bot](https://discord.com/api/oauth2/authorize?client_id=1522588266770206770&permissions=3072&scope=bot)**
+> 2. Boot up the local project using `start.bat` (Windows) or `./start.sh` (Mac) — the bot script will automatically fall back to this shared token.
+> 3. Go to any channel in your Discord server and type **`!setchannel`**. The bot will dynamically bind and start posting live alerts and responding to commands there!
+
+---
+
+To configure, connect, and interact with your own custom Discord agent, follow these steps:
 
 ### **Step A: Register Your Bot Application**
 1. Open the **[Discord Developer Portal](https://discord.com/developers/applications)** and click **New Application**.
