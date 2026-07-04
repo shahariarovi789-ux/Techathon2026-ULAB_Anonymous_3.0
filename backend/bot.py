@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 TOKEN = os.getenv("DISCORD_BOT_TOKEN", "")
-CHANNEL_ID = os.getenv("DISCORD_CHANNEL_ID", "")
+ACTIVE_CHANNEL_ID = os.getenv("DISCORD_CHANNEL_ID", "")
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 
 # Dummy user data strictly enforced per requirements
@@ -281,20 +281,25 @@ async def shutdown_error(ctx, error):
     if isinstance(error, commands.MissingPermissions):
         await ctx.send("❌ **Access Denied**: You do not have the required permissions to execute this command. (Requires: `Administrator`)")
 
+@bot.command(name="setchannel")
+@commands.has_permissions(administrator=True)
+async def setchannel_command(ctx):
+    """Admin-only: Configure this channel dynamically to receive Lumina energy alerts."""
+    global ACTIVE_CHANNEL_ID
+    ACTIVE_CHANNEL_ID = str(ctx.channel.id)
+    await ctx.send(f"✅ **Alerts Configured**: This channel (`#{ctx.channel.name}`) has been dynamically bound! Proactive warnings will be sent here.")
+
+@setchannel_command.error
+async def setchannel_error(ctx, error):
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.send("❌ **Access Denied**: You do not have the required permissions to execute this command. (Requires: `Administrator`)")
+
 # Live WebSocket alert listener
 async def websocket_alert_listener():
     """Listens to the backend WebSocket gateway and dispatches alerts instantly (sub-second latency)."""
     global notified_alerts
     await bot.wait_until_ready()
     
-    # Resolve target channel
-    target_channel = None
-    if CHANNEL_ID:
-        try:
-            target_channel = bot.get_channel(int(CHANNEL_ID)) or await bot.fetch_channel(int(CHANNEL_ID))
-        except Exception as e:
-            print(f"[Discord Bot Warning] Could not resolve channel ID {CHANNEL_ID}: {e}")
-            
     ws_url = BACKEND_URL.replace("http://", "ws://") + "/ws/telemetry"
     print(f"🔌 WebSocket Alert Listener connecting to {ws_url}...")
     
@@ -320,10 +325,17 @@ async def websocket_alert_listener():
                                     sim_time = alert.get("simulation_time", "late")
                                     
                                     # Generate conversational warning message via local LLM / template fallback
-                                    # Pass simulation time inside raw_summary for prompt matching
                                     raw_sum = f"Alert: {title}. Details: {desc}. Simulated Time: {sim_time}."
                                     friendly_alert = await generate_conversational_response(raw_sum, "alert")
                                     
+                                    # Resolve target channel dynamically
+                                    target_channel = None
+                                    if ACTIVE_CHANNEL_ID:
+                                        try:
+                                            target_channel = bot.get_channel(int(ACTIVE_CHANNEL_ID)) or await bot.fetch_channel(int(ACTIVE_CHANNEL_ID))
+                                        except Exception as e:
+                                            print(f"[Discord Bot Warning] Could not resolve channel ID {ACTIVE_CHANNEL_ID}: {e}")
+                                            
                                     if target_channel:
                                         await target_channel.send(friendly_alert)
                                         print(f"[WebSocket Alert Sent] {friendly_alert}")
