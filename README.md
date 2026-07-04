@@ -281,5 +281,5 @@ Once the bot is started (via `start.bat` or `start.sh`):
 
 ## 11. Hackathon Project Metadata
 - **Team Name**: `ULAB_Anonymous_3.0`
-- **Team Lead**: `Only Ovi`
+- **Team Lead**: `Shahariar Asfaq Ovi`
 - **Institution**: University of Liberal Arts Bangladesh (ULAB)
