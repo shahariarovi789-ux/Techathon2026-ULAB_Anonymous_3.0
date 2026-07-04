@@ -8,7 +8,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 
 # Load local environment configuration
-load_dotenv()
+load_dotenv(override=True)
 
 TOKEN = os.getenv("DISCORD_BOT_TOKEN", "")
 ACTIVE_CHANNEL_ID = os.getenv("DISCORD_CHANNEL_ID", "")
