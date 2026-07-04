@@ -33,7 +33,74 @@ To prevent discrepancies, the system employs a **Unified Single Source of Truth*
 
 ---
 
-## 3. Technology Stack
+## 3. Core Ecosystem Features
+
+Lumina combines real-time IoT status mirroring, automated energy metrics calculation, historical trend analysis, and conversational AI automation. Below is a detailed breakdown of the primary features along with live system captures:
+
+### 3.1. Real-Time Telemetry & Interactive Digital Twin
+* **Holographic Blueprint Map**: The main interface displays a custom-designed dark-slate top-down layout of the office zones (Drawing Room, Work Room 1, Work Room 2).
+* **Interactive Appliance Badges**: All 15 lights and fans are mapped to absolute coordinates:
+  - **Lights (Yellow)**: Pulse with an amber glow halo when active.
+  - **Fans (Blue)**: Render a spinning rotation animation when turned on.
+* **Instant Manual Control**: Clicking any device icon on the map instantly toggles its state in the FastAPI backend via a WebSocket broadcast.
+
+<p align="center">
+  <img src="assets/feature_dashboard.png" alt="Lumina Live Web Dashboard" width="100%"/>
+</p>
+
+---
+
+### 3.2. Advanced Observation Controls & Dual Simulation Modes
+* **Auto Simulation**: A background thread randomly toggles office appliances to simulate organic energy consumption patterns throughout a standard office cycle.
+* **Manual Override**: Switching to Manual Control freezes automatic transitions, allowing users to toggle room-wise capsules or map badges individually.
+* **Time-Warp Slider**: A virtual 24-hour clock slider allows administrators to change the simulated office hour (00:00 - 23:00) to test off-hours warnings and alerts instantly.
+* **Anomalous Load Injector**: Clicking the "Force 2h Anomaly" button forces all appliances in a room active and offsets their timestamps, immediately triggering a continuous operation warning.
+
+<p align="center">
+  <img src="assets/feature_controls.png" alt="Lumina Observation Controls" width="100%"/>
+</p>
+
+---
+
+### 3.3. Multi-Tier Energy Analytics & Gauge Rings
+* **Telemetry Dials**: Displays real-time data using custom HSL circle progress dials for:
+  - **Office Load (Blue)**: Live active wattage draw.
+  - **Energy Consumed Today (Green)**: Total accumulated Wh load since midnight.
+  - **Estimated Daily Total (Purple)**: True projected kWh load for a complete 24-hour cycle.
+* **Zone Load Allocation**: Displays dynamic horizontal progress bars indicating active wattage share per zone.
+
+<p align="center">
+  <img src="assets/feature_live_view.png" alt="Lumina Energy Analytics Indicators" width="100%"/>
+</p>
+
+---
+
+### 3.4. Deep Historical Analytics & PDF/CSV Exporting
+* **Timeline Charting**: Utilizing `Chart.js` to render multi-line real-time historical graphs, breaking down power consumption overall and by individual rooms.
+* **Flatpickr Calendar Filters**: Features elegant popup date calendars to filter logs over custom windows.
+* **Raw Data Downloads**: Instant CSV exports of historical telemetry records.
+* **Print-Ready PDF Reports**: Generates a professional energy observability report containing embedded charts (rendered in print-friendly high contrast colors) and detailed log tables using `jsPDF`.
+
+<p align="center">
+  <img src="assets/feature_analytics.png" alt="Lumina Chart Timeline & Date Filters" width="49%"/>
+  <img src="assets/feature_pdf_report.png" alt="Generated PDF Report Document" width="49%"/>
+</p>
+
+---
+
+### 3.5. Conversational Discord Bot & Proactive Alerts
+* **LLM Conversations**: Integrates a local `qwen2.5-coder:3b` model to translate raw telemetry states into friendly, humanized summaries.
+* **Strict Anonymization**: Enforces strict prompt parameters that strip all employee names (Nafisa/Tanvir) to prevent security leakages in alerts.
+* **Proactive Warning Dispatches**: Instantly pushes warnings (🚨 after-hours activity) and critical alarms (🔥 extreme off-hours load) to the Discord server via a WebSocket channel listener.
+* **Administrative Remote Shutdown**: Server administrators can execute `!shutdown` to remotely power off all 15 active lights and fans.
+
+<p align="center">
+  <img src="assets/feature_discord_bot.png" alt="Discord Bot Commands & Alerts" width="100%"/>
+</p>
+
+---
+
+## 4. Technology Stack
 - **Backend API**: Python 3.11+, FastAPI, Uvicorn, Asyncio.
 - **Frontend Dashboard**: Vanilla HTML5, CSS Custom Animations, Tailwind CSS, Native WebSockets.
 - **Discord Bot**: `discord.py`, `aiohttp` for async queries.
@@ -42,7 +109,7 @@ To prevent discrepancies, the system employs a **Unified Single Source of Truth*
 
 ---
 
-## 4. Hardware Circuit Schematic
+## 5. Hardware Circuit Schematic
 
 Below is the representative circuit schematic showing how the devices (3 Lights and 2 Fans) are wired to the Arduino Uno microcontroller for a single office zone (Drawing Room):
 
@@ -52,7 +119,7 @@ Below is the representative circuit schematic showing how the devices (3 Lights 
 
 ---
 
-## 5. Setup & Running Instructions
+## 6. Setup & Running Instructions
 
 ### Prerequisites (All Platforms)
 1. **Python 3.11+** installed (Verify with `python --version` or `python3 --version`).
@@ -132,7 +199,7 @@ Once the backend is running, open your web browser and navigate directly to:
 
 ---
 
-## 6. API Endpoint Documentation
+## 7. API Endpoint Documentation
 
 | Method | Endpoint | Description |
 |---|---|---|
@@ -146,7 +213,7 @@ Once the backend is running, open your web browser and navigate directly to:
 
 ---
 
-## 7. AI Integration & Anonymized Reports
+## 8. AI Integration & Anonymized Reports
 - **Local LLM**: Utilizes `qwen2.5-coder:3b` (Quantized Q4_K_M) via Ollama.
 - **Anonymization & Constraints**: The prompt engineering parameters strictly enforce anonymity rules. The AI translates raw JSON logs into conversational alerts while completely avoiding employee names (such as Nafisa or Tanvir) or administrative roles to prevent security leakage.
 - **Proactive Warnings**: A background listener queries `/api/alerts` periodically. If a warning (after-hours usage) or critical alert (extreme off-hours load) is active, the bot generates a friendly, high-urgency message block containing warning indicators (e.g. 🚨, 🔥) and posts it to the configured channel.
@@ -154,7 +221,7 @@ Once the backend is running, open your web browser and navigate directly to:
 
 ---
 
-## 8. Discord Commands & Administrative Security
+## 9. Discord Commands & Administrative Security
 
 The Discord Bot client responds to prefix commands (`!`) and supports secure administrative commands:
 
@@ -165,7 +232,7 @@ The Discord Bot client responds to prefix commands (`!`) and supports secure adm
 
 ---
 
-## 9. Setup & Using the Discord Bot (Step-by-Step Guide)
+## 10. Setup & Using the Discord Bot (Step-by-Step Guide)
 
 > [!IMPORTANT]
 > **🚀 Instant Demo Setup (Skip Discord Developer Portal)**
@@ -212,7 +279,7 @@ Once the bot is started (via `start.bat` or `start.sh`):
 
 ---
 
-## 10. Hackathon Project Metadata
+## 11. Hackathon Project Metadata
 - **Team Name**: `ULAB_Anonymous_3.0`
 - **Team Lead**: `Only Ovi`
 - **Institution**: University of Liberal Arts Bangladesh (ULAB)
