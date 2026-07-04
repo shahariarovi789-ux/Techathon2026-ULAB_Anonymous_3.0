@@ -14,7 +14,7 @@ Lumina is a production-ready **Digital Twin & IoT Observability Ecosystem** desi
 
 ## 1. Problem Understanding & Relevance
 In many office spaces, electrical appliances (lights, fans) are frequently left running after hours, resulting in skyrocketing electricity bills and safety concerns. The boss's big idea is to establish:
-1. ** observability**: A live visual dashboard representing the entire office's device states (lights, fans) and live power consumption.
+1. **Observability**: A live visual dashboard representing the entire office's device states (lights, fans) and live power consumption.
 2. **Alerts**: Instant notifications when devices are left active inappropriately.
 3. **Conversational interface**: A Discord bot that answers queries about the office's energy states in friendly, humanized terms rather than dumping robotic logs.
 
