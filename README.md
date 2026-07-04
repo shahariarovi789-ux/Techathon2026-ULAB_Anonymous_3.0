@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img src="frontend/lumina_logo.png" alt="Lumina IoT Workspace Orchestrator" width="160px"/>
+  <img src="assets/lumina_logo_clean.png" alt="Lumina IoT Workspace Orchestrator" width="160px"/>
 </p>
 
 # 🎯 ULAB_Anonymous_3.0: Lumina IoT Workspace Orchestrator
