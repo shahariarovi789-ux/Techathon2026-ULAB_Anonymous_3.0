@@ -1,4 +1,12 @@
-# 🎯 Techathon Nationals 2026: Lumina IoT Workspace Orchestrator
+<p align="center">
+  <img src="assets/techathon_logo.png" alt="Techathon Nationals & Rover Summit" width="100%" max-width="800px"/>
+</p>
+
+<p align="center">
+  <img src="frontend/lumina_logo.png" alt="Lumina IoT Workspace Orchestrator" width="160px"/>
+</p>
+
+# 🎯 ULAB_Anonymous_3.0: Lumina IoT Workspace Orchestrator
 
 Lumina is a production-ready **Digital Twin & IoT Observability Ecosystem** designed to tackle energy waste in modern workspaces. Built on an event-driven, single-source-of-truth backend, it unifies a real-time web dashboard, an LLM-powered Discord automation agent, and a simulated physical hardware schematic.
 
